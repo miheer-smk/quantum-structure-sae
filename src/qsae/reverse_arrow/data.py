@@ -33,6 +33,9 @@ from torch.utils.data import Dataset
 
 # ---------------------------------------------------------------------------
 # Exact-diagonalisation kernel (pure numpy, no scipy sparse)
+# Dense np.linalg.eigvalsh is used instead of scipy.sparse.linalg.eigsh because
+# for L=8 the Hilbert space is only 256×256 — batched dense eigvalsh on (N,256,256)
+# is ~10× faster than N serial sparse eigsh calls.
 # ---------------------------------------------------------------------------
 
 def _build_zz_xx_dense(L: int, J: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
@@ -146,7 +149,7 @@ def make_splits(
     n_train: int = 5000,
     n_val: int = 1000,
     n_test: int = 1000,
-    h_min: float = 0.0,
+    h_min: float = 0.1,
     h_max: float = 2.0,
     J: float = 1.0,
     seed: int = 0,
