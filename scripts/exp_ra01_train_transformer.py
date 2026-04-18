@@ -145,9 +145,25 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=0,
                         help="Global seed for torch, numpy, random, and data generation")
+    parser.add_argument("--h_min", type=float, default=None,
+                        help="Override h_min (default: BASE_CFG value 0.1)")
+    parser.add_argument("--h_max", type=float, default=None,
+                        help="Override h_max (default: BASE_CFG value 2.0)")
+    parser.add_argument("--cache_path", type=str, default=None,
+                        help="Override dataset cache path")
+    parser.add_argument("--run_dir", type=str, default=None,
+                        help="Override output directory")
     args = parser.parse_args()
 
     CFG = {**BASE_CFG, "seed": args.seed}
+    if args.h_min is not None:
+        CFG["h_min"] = args.h_min
+    if args.h_max is not None:
+        CFG["h_max"] = args.h_max
+    if args.cache_path is not None:
+        CFG["cache_path"] = args.cache_path
+    if args.run_dir is not None:
+        CFG["run_dir"] = args.run_dir
 
     set_seeds(CFG["seed"])
 

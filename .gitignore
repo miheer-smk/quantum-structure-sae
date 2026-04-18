@@ -10,9 +10,13 @@ venv/
 runs/
 data/
 *.pt
+*.npz
 *.npy
 *.pkl
 *.h5
+
+# Experiment tracking (not used week 1, excluded preemptively)
+wandb/
 
 # Jupyter
 .ipynb_checkpoints/
