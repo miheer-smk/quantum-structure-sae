@@ -8,7 +8,7 @@ venv/
 dist/
 build/
 
-# Data and experiment outputs
+# Data and experiment outputs (large; not committed)
 runs/
 data/
 *.pt
@@ -16,6 +16,9 @@ data/
 *.npy
 *.pkl
 *.h5
+
+# Committed figures are exempt from the above *.pt rule
+!figures/
 
 # Experiment tracking
 wandb/
