@@ -2,7 +2,32 @@
 name = "qsae"
 version = "0.1.0"
 description = "Sparse autoencoders for mechanistic interpretability of quantum neural networks"
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.10"
+authors = [
+    { name = "Miheer Kulkarni", email = "222050236+miheer-smk@users.noreply.github.com" }
+]
+keywords = [
+    "mechanistic-interpretability",
+    "sparse-autoencoder",
+    "quantum-machine-learning",
+    "transverse-field-ising-model",
+    "transformer",
+    "representation-learning",
+    "AI-safety",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "pennylane>=0.35",
     "pennylane-lightning>=0.35",
@@ -16,8 +41,12 @@ dependencies = [
     "einops>=0.7",
 ]
 
+[project.urls]
+"Homepage" = "https://github.com/miheer-smk/quantum-structure-sae"
+"Bug Tracker" = "https://github.com/miheer-smk/quantum-structure-sae/issues"
+
 [project.optional-dependencies]
-dev = ["pytest>=7.4", "ipykernel", "jupyterlab"]
+dev = ["pytest>=7.4", "ipykernel", "jupyterlab", "ruff"]
 gpu = ["pennylane-lightning-gpu"]
 
 [build-system]
@@ -29,3 +58,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

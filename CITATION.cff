@@ -1,0 +1,54 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+type: software
+title: "quantum-structure-sae: Mechanistic Interpretability of Transformers via Sparse Autoencoders on Quantum Data"
+authors:
+  - family-names: Kulkarni
+    given-names: Miheer
+    orcid: ""
+repository-code: "https://github.com/miheer-smk/quantum-structure-sae"
+license: MIT
+version: 0.1.0
+date-released: "2026-04-01"
+keywords:
+  - mechanistic interpretability
+  - sparse autoencoders
+  - quantum machine learning
+  - transverse-field Ising model
+  - transformer
+  - representation learning
+  - AI safety
+abstract: >
+  We investigate whether classical transformers trained to predict quantum
+  ground-state energies develop internal representations corresponding to
+  physically meaningful quantum observables. Using TopK sparse autoencoders
+  applied to transformer residual-stream activations, we test whether
+  discovered features correlate with entanglement entropy, order parameters,
+  and proximity to phase transitions in the 1D Transverse-Field Ising Model.
+references:
+  - type: article
+    title: "Scaling and evaluating sparse autoencoders"
+    authors:
+      - family-names: Gao
+        given-names: Leo
+    year: 2024
+    url: "https://arxiv.org/abs/2406.04093"
+  - type: article
+    title: "Towards Monosemanticity: Decomposing Language Models With Dictionary Learning"
+    authors:
+      - family-names: Bricken
+        given-names: Trenton
+    year: 2023
+    url: "https://transformer-circuits.pub/2023/monosemantic-features"
+  - type: article
+    title: "Predicting many properties of a quantum system from very few measurements"
+    authors:
+      - family-names: Huang
+        given-names: Hsin-Yuan
+      - family-names: Kueng
+        given-names: Richard
+      - family-names: Preskill
+        given-names: John
+    journal: "Nature Physics"
+    year: 2020
+    doi: "10.1038/s41567-020-0932-7"
