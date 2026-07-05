@@ -1,7 +1,7 @@
 [project]
 name = "qsae"
 version = "0.1.0"
-description = "Mechanistic interpretability of classical transformers trained on quantum (TFIM) data via sparse autoencoders and linear probes"
+description = "Do classical transformers trained on quantum (TFIM) data linearly encode quantum observables? Interpretability via linear probing (primary) and sparse autoencoders."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"

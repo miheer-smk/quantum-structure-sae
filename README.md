@@ -20,10 +20,16 @@
 
 We train a classical transformer to predict ground-state energies of the 1D
 **Transverse-Field Ising Model** (TFIM) from per-site Hamiltonian parameters
-(test R² = 0.9999), then apply **TopK Sparse Autoencoders** and linear probes to
-its residual-stream activations. The central question: do the network's internal
-representations encode known quantum observables — entanglement entropy, spin
-correlators, the ferromagnetic order parameter, phase proximity?
+(test R² = 0.9999), then ask — primarily via **linear probing**, with **TopK
+Sparse Autoencoders** as a secondary lens — whether its residual-stream
+activations encode known quantum observables: entanglement entropy, spin
+correlators, the ferromagnetic order parameter, phase proximity.
+
+> **A note on method emphasis.** The paper-level claims are made at the level of
+> the *representation* (basis-independent linear probes), not individual SAE
+> features: a hyperparameter sweep (`exp_ra04_sae_grid.py`) shows the SAE feature
+> basis is **not** universal across seeds, so SAEs are used here as an exploratory
+> tool and that negative result is reported in full.
 
 The contribution is not a single correlation but a **controlled** answer. A naive
 feature↔observable correlation is confounded: every observable is a function of
@@ -127,9 +133,10 @@ parameter (4th group) is where learning clearly helps.</i></sub>
 </div>
 
 > **Honest limitation.** The *individual* SAE feature basis is **not** universal
-> across seeds (cos > 0.7 fraction ≈ 0.3%), so claims are made at the level of the
-> representation (probes), not individual features. See
-> [`docs/week3_results.md`](docs/week3_results.md) §3–4.
+> across seeds (cos > 0.7 fraction ≈ 0.3% at default; a d_hidden × k sweep in
+> `exp_ra04_sae_grid.py` peaks at only ~6%, so it is *not* a hyperparameter
+> artifact). Claims are therefore made at the level of the representation (probes,
+> C1/C2/C4), not individual features. See [`docs/week3_results.md`](docs/week3_results.md) §3.
 
 ### 3 · Pipeline validation on classical data
 
