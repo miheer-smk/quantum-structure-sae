@@ -49,3 +49,19 @@ def test_per_bond_disordered_couplings_run_and_match_uniform():
     J_bonds = np.ones((4, 5))
     e_bonds, _ = compute_ground_states_sparse(h, J_fields=J_bonds)
     np.testing.assert_allclose(e_scalar, e_bonds, atol=1e-9)
+
+
+def test_longitudinal_field_breaks_z2_symmetry():
+    from qsae.observables import longitudinal_magnetization_fast
+    h = np.full((1, 6), 0.5)
+    # g=0: Z2-symmetric ground state -> <Z_i> ~ 0
+    _, s0 = compute_ground_states_sparse(h, g_fields=0.0)
+    # g>0: mixed-field, symmetry explicitly broken -> <Z_i> nonzero
+    e1, s1 = compute_ground_states_sparse(h, g_fields=0.5)
+    mz0 = np.abs(longitudinal_magnetization_fast(s0[0], 6)).mean()
+    mz1 = np.abs(longitudinal_magnetization_fast(s1[0], 6)).mean()
+    assert mz0 < 1e-6
+    assert mz1 > 0.05
+    # adding a longitudinal field lowers the ground-state energy
+    e0, _ = compute_ground_states_sparse(h, g_fields=0.0)
+    assert e1[0] < e0[0]
