@@ -121,6 +121,21 @@ This is the cleanest result in the study:
 - **long_range_zz → 0.694**: the feature carries substantial information about
   long-range order **beyond** the mean field. This is the non-trivial, publishable
   signal.
+
+**Multi-seed robustness** (`exp_ra06_multiseed.py`, `runs/ra06_multiseed/`). Over
+3 independent seeds (fresh disorder realisations *and* fresh SAE each), the
+`long_range_zz` numbers are tight:
+
+| quantity | mean ± std (3 seeds) |
+|:--|:--:|
+| probe R² (trained transformer) | **0.963 ± 0.002** |
+| probe R² (untrained transformer) | 0.926 ± 0.006 |
+| probe R² (raw h) | 0.765 ± 0.007 |
+| probe R² (mean h) | 0.689 ± 0.010 |
+| **partial-r given mean-h** | **0.706 ± 0.011** |
+
+The trained-vs-untrained gap and the beyond-mean-field partial correlation are
+both stable, not single-run artifacts.
 - entropy and ⟨X⟩ retain moderate beyond-mean-field structure; ⟨ZᵢZ_{i+1}⟩ is mostly
   mean-field. See `fig_partial.png`.
 

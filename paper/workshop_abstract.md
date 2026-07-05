@@ -1,0 +1,144 @@
+# Classical transformers linearly encode non-local quantum order beyond the mean field
+
+*Miheer Kulkarni. Draft extended abstract (~4 pages excl. references). Template-
+agnostic Markdown — port to the target workshop's LaTeX style once the CFP is
+fixed (candidate venues: NeurIPS ML4PS, ICLR workshops, TMLR). Every number is
+reproducible via `bash scripts/reproduce_all.sh`; see `docs/week3_results.md`.*
+
+> **Framing (author-approved).** Claims are made at the level of the *representation*
+> — basis-independent linear probes of the residual stream — not individual sparse
+> features. A d_hidden × k sweep shows the SAE feature basis is not universal across
+> seeds; SAEs appear here only as an exploratory lens and that negative result is
+> reported in full (§5).
+
+## Abstract
+
+Do classical neural networks trained on quantum data build internal
+representations that reflect the underlying physics? We train a small transformer
+to predict ground-state energies of the disordered 1D transverse-field Ising model
+(TFIM) from its per-site fields (test R² = 0.9999) and ask whether its
+residual-stream activations linearly encode standard quantum observables. The
+naive answer is confounded: every observable is a function of the field vector
+**h**, which is the network's input, so even an untrained network would look
+"structured." Using cross-validated linear probes with an untrained-network
+control, a mean-field partial-correlation control, a permutation null, and a depth
+sweep, we isolate what is *learned*. We find that the **non-local order parameter**
+⟨Z₀Z_{L−1}⟩ is decoded from the trained representation substantially better than
+from an untrained network, the raw input, a degree-2 polynomial of the input, or
+the mean field; the signal survives partial-correlation control (partial-r =
+[MEAN ± STD over 3 seeds]) and a permutation null (p ≈ 0), and it strengthens with
+network depth. Observables that are trivially mean-field (phase proximity) are
+correctly identified as such — a calibrated negative control. This is, to our
+knowledge, a clean demonstration that a classical network trained only on energies
+develops a depth-assembled, non-local representation of quantum order, established
+with the controls needed to rule out the trivial input-dependence explanation.
+
+## 1. Introduction
+
+A recurring question in both scientific machine learning and mechanistic
+interpretability is whether networks trained on physical data internalise known
+physical structure, or merely fit input–output statistics. We study this in a
+setting where the "known structure" is exactly computable: the 1D TFIM, whose
+ground-state observables (entanglement entropy, spin correlators, order parameter)
+follow from exact diagonalisation. Our contribution is not a single correlation
+but a **controlled** answer. The central methodological point is that raw
+feature↔observable correlations are confounded by the fact that the observables
+are functions of the input; we show how a small battery of controls separates
+learned structure from that confound, and we report honestly where the signal is
+in fact trivial.
+
+## 2. Setup
+
+**Task and model.** Hamiltonian H = −J Σ Zᵢ Z_{i+1} − Σ hᵢ Xᵢ, open boundary,
+L = 8, J = 1, per-site fields hᵢ ∼ U(0.1, 2.0). A 3-layer Pre-LN transformer
+encoder (d_model = 64, 4 heads, 152k params) maps **h** → E₀, trained on 50k
+exact-diagonalisation samples to test R² = 0.9999 (RMSE 0.010), a 3.5× RMSE
+improvement over a degree-2 polynomial baseline (§Appendix / `docs/week1_results.md`).
+
+**Observables** (exact, from the state vector): half-chain entanglement entropy
+S(ρ_A); mean nearest-neighbour correlator ⟨ZᵢZ_{i+1}⟩; transverse magnetization
+⟨Xᵢ⟩; the end-to-end correlator ⟨Z₀Z_{L−1}⟩ as the finite-size order parameter;
+and phase proximity δ = (h̄−h_c)/h_c. *Note:* the single-site order parameter
+mean|⟨Zᵢ⟩| vanishes identically at finite L by the Z₂ symmetry of the ground state
+(measured ∼10⁻¹³), so we use the maximal-separation correlator instead.
+
+**Representation.** Mean-pooled residual stream at each encoder layer, evaluated on
+held-out disorder realisations.
+
+## 3. Core result: linear decodability of observables
+
+We fit 5-fold cross-validated ridge probes predicting each observable from the
+last-layer residual stream, and compare against four baselines: an *untrained*
+(random-weight) transformer of the same architecture, the raw input **h**, degree-2
+polynomial features of **h**, and the single scalar mean field h̄.
+
+| Observable | Trained | Untrained | Raw h | Poly-2 h | Mean h |
+|---|---:|---:|---:|---:|---:|
+| S(ρ_A) entropy | 0.934 | 0.938 | 0.863 | 0.941 | 0.670 |
+| ⟨ZᵢZ_{i+1}⟩ | 0.995 | 0.991 | 0.971 | 0.988 | 0.945 |
+| ⟨Xᵢ⟩ | 0.991 | 0.985 | 0.916 | 0.983 | 0.896 |
+| **⟨Z₀Z_{L−1}⟩** | **0.961** | 0.921 | 0.772 | 0.942 | 0.695 |
+| phase proximity δ | 0.999 | 0.999 | 1.000 | 1.000 | 1.000 |
+
+Two observations. (i) Most observables are decoded nearly as well by an *untrained*
+network — generic non-linear mixing of the input suffices, so training adds little.
+(ii) The order parameter ⟨Z₀Z_{L−1}⟩ is the exception: the trained network beats
+the untrained one and every input baseline. This is the one place where learning,
+specifically, matters. The gap is stable across seeds: over 3 independent runs the
+trained-network probe R² is 0.963 ± 0.002 vs 0.926 ± 0.006 untrained, 0.765 ± 0.007
+raw h, and 0.689 ± 0.010 mean h.
+
+## 4. Controls
+
+**Depth (C2).** ⟨Z₀Z_{L−1}⟩ decodability increases monotonically with layer
+(0.916 → 0.945 → 0.961), consistent with the network assembling non-local order
+information across depth; other observables are flat.
+
+**Permutation null (C3).** Shuffling each observable 500× and recomputing the best
+single-feature |r| over all alive features (a multiple-comparisons control) yields a
+null 95th percentile of 0.12–0.16; the observed values (0.79–0.90) give empirical
+p ≈ 0.
+
+**Mean-field partial correlation (C4).** Controlling for h̄, the best feature for
+⟨Z₀Z_{L−1}⟩ retains partial-r = 0.71 ± 0.01 over 3 seeds — genuine beyond-mean-field
+structure — whereas phase proximity drops to 0.00, correctly identifying it as a
+pure mean-field quantity. This calibrated negative control is central: it shows the
+method does not simply relabel the input.
+
+## 5. What can and cannot be claimed
+
+**Supported.** (1) The trained representation linearly encodes the non-local order
+parameter beyond an untrained network, the raw input, a degree-2 polynomial of it,
+and the mean field, with the effect strengthening in depth and surviving both a
+partial-correlation control and a permutation null. (2) The pipeline is calibrated:
+it reports "trivial" for the trivial observable.
+
+**Not supported.** (1) *Individual, monosemantic sparse features* mapping one-to-one
+to named observables: a d_hidden ∈ {256,512,1024} × k ∈ {8,16,32} sweep of TopK SAEs
+finds the feature basis is not universal across seeds (best cell ~6% of features
+match at cos > 0.7; mean matched cosine ~0.4). We therefore make claims at the
+representation level, not the feature level, and report this negative result in full.
+(2) Any "quantum advantage" claim — out of scope.
+
+## 6. Limitations and next steps
+
+**Integrability.** The 1D TFIM is exactly solvable (Jordan–Wigner → free fermions),
+so its observables are comparatively low-complexity functions of **h**; the
+beyond-mean-field result should be reproduced on a non-integrable Hamiltonian (TFIM
++ longitudinal field, ANNNI, Heisenberg) before over-generalising. **Scale.** L = 8
+here; the mean-field baselines are expected to weaken as L grows, so the order-
+parameter effect should be re-checked at L = 12–14 (exact-diagonalisation ceiling)
+and, for genuinely non-polynomial tasks, with disordered couplings J_{ij}.
+**Causality.** All controls are correlational; an activation-patching intervention on
+the ⟨Z₀Z_{L−1}⟩-predictive direction would establish that the model *uses* this
+structure, not just that it is decodable. These define the path from this abstract to
+a full paper.
+
+## References
+
+*(Verify exact titles/venues before submission — do not cite from memory.)*
+Gao et al., *Scaling and evaluating sparse autoencoders*, 2024. Bricken et al.,
+*Towards Monosemanticity*, 2023. Huang, Kueng & Preskill, *Predicting many properties
+of a quantum system from very few measurements*, Nature Physics 2020. Sachdev,
+*Quantum Phase Transitions*, 2nd ed., 2011. Calabrese & Cardy, *Entanglement entropy
+and quantum field theory*, 2004.

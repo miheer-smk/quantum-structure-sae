@@ -41,6 +41,14 @@ echo "[3/5] Stage 2 — control battery C1-C5"
 $PY scripts/exp_ra03_controls.py --ckpt "$CKPT" \
     --n_samples "$N_CTRL" --n_perm "$N_PERM" --sae_epochs "$SAE_EPOCHS"
 
+echo "[3b] SAE cross-seed universality grid (C5 revisited)"
+$PY scripts/exp_ra04_sae_grid.py --ckpt "$CKPT" \
+    --n_samples $((N_CTRL + 1200)) --sae_epochs "$SAE_EPOCHS"
+
+echo "[3c] multi-seed headline (long-range-ZZ partial-r, mean +/- std)"
+$PY scripts/exp_ra06_multiseed.py --ckpt "$CKPT" --seeds 42,43,44 \
+    --n_samples "$N_CTRL" --n_perm "$N_PERM" --sae_epochs "$SAE_EPOCHS"
+
 echo "[4/5] classical-data validation (Bars-and-Stripes QNN -> shadow -> SAE)"
 if [[ "${SKIP_BAS:-0}" == "1" ]]; then
   echo "    SKIP_BAS=1 — skipping"
