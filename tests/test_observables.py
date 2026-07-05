@@ -20,6 +20,7 @@ from qsae.observables import (
     compute_all_observables,
     entanglement_spectrum,
     half_chain_entanglement_entropy,
+    long_range_zz,
     longitudinal_magnetization,
     nearest_neighbor_zz,
     order_parameter,
@@ -321,3 +322,41 @@ class TestComputeAllObservables:
         obs = compute_all_observables(psi[np.newaxis], n, compute_zz_matrix=True)
         assert "zz_matrix" in obs
         assert obs["zz_matrix"].shape == (1, n, n)
+
+
+class TestLongRangeZZ:
+    """End-to-end correlator ⟨Z_0 Z_{n-1}⟩ and the finite-L order proxy."""
+
+    def test_ghz_long_range_zz_is_one(self):
+        n = 6
+        assert long_range_zz(_ghz(n), n) == pytest.approx(1.0, abs=1e-12)
+
+    def test_plus_product_long_range_zz_is_zero(self):
+        n = 6
+        assert long_range_zz(_all_plus(n), n) == pytest.approx(0.0, abs=1e-12)
+
+    def test_zeros_product_long_range_zz_is_one(self):
+        n = 5
+        assert long_range_zz(_all_zeros(n), n) == pytest.approx(1.0, abs=1e-12)
+
+    def test_batch_keys_and_proxy_nonnegative(self):
+        rng = np.random.default_rng(0)
+        n, N = 4, 8
+        states = np.stack([_ghz(n)] * N)
+        obs = compute_all_observables(states, n)
+        assert obs["long_range_zz"].shape == (N,)
+        assert obs["order_param_proxy"].shape == (N,)
+        # proxy = sqrt(clip(lr_zz, 0)) is always finite and >= 0
+        assert np.all(obs["order_param_proxy"] >= 0.0)
+        assert np.all(np.isfinite(obs["order_param_proxy"]))
+        # GHZ: lr_zz = 1  ->  proxy = 1
+        assert obs["order_param_proxy"] == pytest.approx(1.0, abs=1e-9)
+
+    def test_ordered_phase_has_larger_long_range_zz(self):
+        """TFIM: ordered (h≪J) should have larger ⟨Z_0 Z_{L-1}⟩ than disordered."""
+        from qsae.datasets import tfim_ground_states
+
+        n = 8
+        ordered = tfim_ground_states(n=n, h_values=np.array([0.2]))[0]
+        disordered = tfim_ground_states(n=n, h_values=np.array([3.0]))[0]
+        assert long_range_zz(ordered, n) > long_range_zz(disordered, n)

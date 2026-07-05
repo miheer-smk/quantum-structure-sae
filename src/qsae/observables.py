@@ -192,6 +192,22 @@ def nearest_neighbor_zz(state: np.ndarray, n: int) -> np.ndarray:
     return np.array([zz_correlator(state, n, i, i + 1) for i in range(n - 1)])
 
 
+def long_range_zz(state: np.ndarray, n: int) -> float:
+    """
+    End-to-end correlator ⟨Z_0 Z_{n-1}⟩ — the maximal-separation ZZ correlator.
+
+    Why this (and not |⟨Z_i⟩|):  at finite L the exact ground state respects the
+    Z₂ symmetry Π X_i, so the single-site magnetization ⟨Z_i⟩ = 0 *identically*
+    and the naive order parameter mean|⟨Z_i⟩| is numerically zero (~1e-13).  The
+    finite-size ferromagnetic order is instead diagnosed by the two-point
+    correlator at the largest separation, which stays O(1) in the ordered phase
+    (h ≪ J) and decays toward 0 in the paramagnetic phase (h ≫ J).  This is the
+    standard finite-size proxy for spontaneous magnetization,
+    m² = lim_{|i-j|→∞} ⟨Z_i Z_j⟩ (Sachdev, *Quantum Phase Transitions*, Ch. 5).
+    """
+    return zz_correlator(state, n, 0, n - 1)
+
+
 # ---------------------------------------------------------------------------
 # Magnetization
 # ---------------------------------------------------------------------------
@@ -278,7 +294,9 @@ def compute_all_observables(
         "mean_nn_zz"      : (N,) mean of nn_zz over bonds
         "transverse_mag"  : (N, n) per-site ⟨X_i⟩
         "mean_x"          : (N,) site-averaged ⟨X⟩
-        "order_param"     : (N,) ferromagnetic order parameter |⟨Z⟩|
+        "order_param"     : (N,) mean|⟨Z_i⟩| — ≈0 at finite L (Z₂ sym); deprecated
+        "long_range_zz"   : (N,) ⟨Z_0 Z_{n-1}⟩ end-to-end correlator (order proxy)
+        "order_param_proxy": (N,) √⟨Z_0 Z_{n-1}⟩ spontaneous-magnetization proxy
         "phase_proximity" : (N,) δ = (h - h_c)/h_c  [only if h_values given]
         "zz_matrix"       : (N, n, n) full ZZ matrix [only if compute_zz_matrix]
     """
@@ -287,6 +305,7 @@ def compute_all_observables(
     nn_zz         = np.empty((N, n - 1))
     transverse_m  = np.empty((N, n))
     order_param   = np.empty(N)
+    lr_zz         = np.empty(N)
 
     for k in range(N):
         psi = states[k]
@@ -294,6 +313,10 @@ def compute_all_observables(
         nn_zz[k]        = nearest_neighbor_zz(psi, n)
         transverse_m[k] = transverse_magnetization(psi, n)
         order_param[k]  = order_parameter(psi, n)
+        lr_zz[k]        = long_range_zz(psi, n)
+
+    # Spontaneous-magnetization proxy m = sqrt(<Z_0 Z_{L-1}>), clipped at 0.
+    order_param_proxy = np.sqrt(np.clip(lr_zz, 0.0, None))
 
     obs: dict[str, np.ndarray] = {
         "entropy":        entropy,
@@ -301,7 +324,11 @@ def compute_all_observables(
         "mean_nn_zz":     nn_zz.mean(axis=1),
         "transverse_mag": transverse_m,
         "mean_x":         transverse_m.mean(axis=1),
-        "order_param":    order_param,
+        # NOTE: order_param = mean|<Z_i>| is ~0 identically at finite L (Z2 sym);
+        # kept only for backward-compat. Use `long_range_zz` / `order_param_proxy`.
+        "order_param":       order_param,
+        "long_range_zz":     lr_zz,
+        "order_param_proxy": order_param_proxy,
     }
 
     if h_values is not None:

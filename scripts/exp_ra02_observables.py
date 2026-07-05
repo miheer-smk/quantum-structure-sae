@@ -332,7 +332,10 @@ def main() -> None:
     # ------------------------------------------------------------------
     print("[ra02] computing Pearson correlations …")
 
-    scalar_obs_names = ["entropy", "mean_nn_zz", "mean_x", "order_param", "phase_proximity"]
+    # NOTE: order_param = mean|<Z_i>| is identically 0 at finite L by Z₂ symmetry
+    # (verified: |value| ~ 1e-13). We use long_range_zz = <Z_0 Z_{L-1}> as the
+    # finite-size ferromagnetic order indicator instead. See observables.py.
+    scalar_obs_names = ["entropy", "mean_nn_zz", "mean_x", "long_range_zz", "phase_proximity"]
     scalar_obs_matrix = np.stack([obs[k] for k in scalar_obs_names], axis=1)  # (N, O)
 
     alive_mask = (z_all > 0).any(axis=0)
