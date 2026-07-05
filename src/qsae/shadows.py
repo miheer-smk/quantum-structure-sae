@@ -158,7 +158,6 @@ def estimate_pauli_expectation(
     This is the standard median-of-means style estimator reduced to a
     plain mean; for smaller n_samples one can use median-of-means.
     """
-    n = pauli.shape[0]
     # pauli encoding:  0=I, 1=X->basis 0, 2=Y->basis 1, 3=Z->basis 2
     nonI = pauli != 0
     weight = int(nonI.sum())

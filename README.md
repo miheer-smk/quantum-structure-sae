@@ -144,14 +144,19 @@ recovers structure on data whose ground truth is known.
 
 ```
 TFIM Hamiltonian parameters  →  TFIMTransformer  →  E₀ prediction   (R² = 0.9999)
-        hᵢ ∈ Rᴸ                                       [Week 1 ✅]
+        hᵢ ∈ Rᴸ                                       [Stage 1 ✅]
 
 Residual-stream activations  →  TopK SAE + probes  →  Sparse features + decodability
-        (N, d_model)                                   (N, d_hidden)   [Week 3 ✅]
+        (N, d_model)                                   (N, d_hidden)   [Stage 2 ✅]
 
 Features / activations  ←→  Quantum observables   (correlation + 5 controls)
-        {z_f}, h_ℓ           S(ρ_A), ⟨ZᵢZ_j⟩, ⟨Xᵢ⟩, ⟨Z₀Z_{L-1}⟩, δ    [Week 3 ✅]
+        {z_f}, h_ℓ           S(ρ_A), ⟨ZᵢZ_j⟩, ⟨Xᵢ⟩, ⟨Z₀Z_{L-1}⟩, δ    [Stage 2 ✅]
 ```
+
+<sub>Stage 1 → [`docs/week1_results.md`](docs/week1_results.md) · Stage 2 →
+[`docs/week3_results.md`](docs/week3_results.md). The `week*` filenames are
+historical; see [`RUNBOOK.md`](RUNBOOK.md) for the stage↔document map and the
+full two-phase roadmap in [`EXECUTION_PLAN.md`](EXECUTION_PLAN.md).</sub>
 
 **Observables via exact diagonalisation** (`src/qsae/observables.py`):
 

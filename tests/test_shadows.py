@@ -9,7 +9,6 @@ direct inner product).
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from qsae.shadows import (
     build_feature_observables,
@@ -56,8 +55,10 @@ def test_product_state_single_qubit_expectations() -> None:
     bases, outcomes = compute_pauli_shadow(psi, n, n_samples=4000, rng=rng)
 
     # <X_0> should be ~1, <Z_0> should be ~0
-    xp = np.zeros(n, dtype=np.int8); xp[0] = 1  # X_0
-    zp = np.zeros(n, dtype=np.int8); zp[0] = 3  # Z_0
+    xp = np.zeros(n, dtype=np.int8)
+    xp[0] = 1  # X_0
+    zp = np.zeros(n, dtype=np.int8)
+    zp[0] = 3  # Z_0
 
     x_est = estimate_pauli_expectation(xp, bases, outcomes)
     z_est = estimate_pauli_expectation(zp, bases, outcomes)

@@ -1,7 +1,7 @@
 [project]
 name = "qsae"
 version = "0.1.0"
-description = "Sparse autoencoders for mechanistic interpretability of quantum neural networks"
+description = "Mechanistic interpretability of classical transformers trained on quantum (TFIM) data via sparse autoencoders and linear probes"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"

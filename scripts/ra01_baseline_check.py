@@ -48,9 +48,9 @@ print(f"[check] train={len(h_train)}, test={len(h_test)}")
 # ---------------------------------------------------------------------------
 # Baseline 1: Linear regression
 # ---------------------------------------------------------------------------
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression  # noqa: E402
+from sklearn.metrics import r2_score  # noqa: E402
+from sklearn.preprocessing import PolynomialFeatures  # noqa: E402
 
 print("\n[check] fitting linear regression …")
 lr = LinearRegression()
@@ -81,7 +81,7 @@ print(f"  Poly(deg=2)  R²={r2_poly:.6f}  RMSE={rmse_poly:.5f}")
 # ---------------------------------------------------------------------------
 print("\n[check] loading transformer checkpoint …")
 sys.path.insert(0, "src")
-from qsae.reverse_arrow.transformer import TFIMTransformer
+from qsae.reverse_arrow.transformer import TFIMTransformer  # noqa: E402
 
 ckpt = torch.load(CKPT, weights_only=False)
 energy_mean = ckpt["energy_mean"]

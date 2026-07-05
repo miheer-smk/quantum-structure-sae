@@ -340,7 +340,6 @@ class TestLongRangeZZ:
         assert long_range_zz(_all_zeros(n), n) == pytest.approx(1.0, abs=1e-12)
 
     def test_batch_keys_and_proxy_nonnegative(self):
-        rng = np.random.default_rng(0)
         n, N = 4, 8
         states = np.stack([_ghz(n)] * N)
         obs = compute_all_observables(states, n)

@@ -37,11 +37,9 @@ import torch
 import torch.nn as nn
 from scipy import stats
 
-from qsae.reverse_arrow.data import make_splits, compute_ground_energies
 from qsae.reverse_arrow.transformer import TFIMTransformer
 from qsae.observables import compute_all_observables
 from qsae.sae import SAEConfig, TopKSAE
-from qsae.datasets import tfim_ground_states
 
 
 # ---------------------------------------------------------------------------
@@ -124,12 +122,12 @@ def pearson_matrix(
     r_mat : (F, O) Pearson-r matrix
     p_mat : (F, O) p-value matrix
     """
-    F = features.shape[1]
-    O = observables.shape[1]
-    r_mat = np.empty((F, O))
-    p_mat = np.empty((F, O))
-    for f in range(F):
-        for o in range(O):
+    n_feat = features.shape[1]
+    n_obs = observables.shape[1]
+    r_mat = np.empty((n_feat, n_obs))
+    p_mat = np.empty((n_feat, n_obs))
+    for f in range(n_feat):
+        for o in range(n_obs):
             r, p = stats.pearsonr(features[:, f], observables[:, o])
             r_mat[f, o] = r
             p_mat[f, o] = p
@@ -209,15 +207,9 @@ def main() -> None:
     h_fields = rng.uniform(0.1, 2.0, size=(args.n_samples, L)).astype(np.float64)
     h_mean   = h_fields.mean(axis=1)   # per-sample mean field
 
-    # Ground states via exact diagonalisation (disordered TFIM)
-    from qsae.reverse_arrow.data import compute_ground_energies
-    energies = compute_ground_energies(h_fields, J=1.0)
-
-    # Full state vectors via tfim_ground_states (uniform-h version for small n)
-    # For the disordered model we build ground states column by column
+    # Ground-state vectors via exact diagonalisation (disordered TFIM):
+    # built column by column below.
     print("[ra02] computing ground-state vectors via exact diagonalisation …")
-    from scipy.sparse import csr_matrix, eye, kron
-    from scipy.sparse.linalg import eigsh
 
     I2 = np.eye(2, dtype=np.complex128)
     X2 = np.array([[0, 1], [1, 0]], dtype=np.complex128)

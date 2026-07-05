@@ -154,6 +154,13 @@ for whichever feature is selected — so the main claim is robust to this limita
 - Any "quantum advantage" claim — out of scope by design (see RUNBOOK).
 
 **Threats to validity / next steps.**
+- **Integrability.** The 1D TFIM is *exactly solvable* — a Jordan–Wigner
+  transformation maps it to free fermions — so its ground-state observables are
+  comparatively low-complexity functions of **h**. "The transformer had to learn
+  genuine structure" is therefore a weaker claim here than it would be for a
+  non-integrable/chaotic system; the beyond-mean-field result should be
+  reproduced on a non-integrable Hamiltonian (e.g. TFIM + longitudinal field, the
+  ANNNI model, or a Heisenberg chain) before it is over-generalised.
 - L = 8 only. The order-parameter signal should be re-checked at L = 12 (the
   mean-field baselines are expected to weaken as L grows — see `week1_results.md`).
 - Disordered couplings J_{ij} would break the near-diagonal structure the polynomial

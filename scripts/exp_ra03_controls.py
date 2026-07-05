@@ -351,8 +351,6 @@ def main() -> None:
         null = np.empty(args.n_perm)
         for p in range(args.n_perm):
             yp = rng.permutation(y)
-            rs = ztr_a.T @ (yp - yp.mean())  # unnormalised cov, monotone proxy? -> use full
-            # exact pearson max is expensive; compute properly but vectorised:
             null[p] = _max_abs_pearson(ztr_a, yp)
         null95 = float(np.quantile(null, 0.95))
         p_perm = float((null >= abs(r_tr)).mean())
@@ -508,7 +506,7 @@ def _write_summary(run_dir, results):
                      f"{c3[o]['null_p95']:.3f} | {c3[o]['p_perm']:.3g} | "
                      f"{c4[o]['partial_r_given_meanh']:.3f} |")
     u = results["C5_universality"]
-    lines.append(f"\n## C5 — cross-seed universality\n")
+    lines.append("\n## C5 — cross-seed universality\n")
     lines.append(f"mean matched cosine = {u['mean_matched_cosine']:.3f}; "
                  f"fraction cos>0.7 = {u['universality_frac_cos_gt_0.7']:.3f}\n")
     (run_dir / "summary.md").write_text("\n".join(lines))
