@@ -7,6 +7,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (Phase 1 — toward workshop abstract)
+- `scripts/exp_ra04_sae_grid.py` — SAE cross-seed universality sweep
+  (d_hidden × k). **Robust negative result:** widening d_hidden / shrinking k
+  (the RUNBOOK's suggested levers) do not resolve C5 non-universality — best cell
+  (256, k=8) reaches only ~6% seed-stable features. Motivates framing the paper at
+  the representation level (C1/C2/C4) rather than individual SAE features.
+- `compute_all_observables_fast` + `zz_correlator_fast` /
+  `transverse_magnetization_fast` / `long_range_zz_fast` / `_z_signs` in
+  `observables.py` — dense-operator-free (bit-arithmetic) observables that scale to
+  L ≈ 14, since the dense-kron path needs 268 MB per operator at L=12. Verified
+  identical to the dense path (`TestFastObservables`, 3 new tests). `exp_ra03` now
+  uses the fast path (ED+observables for N=800 in ~20 s vs ~300 s).
+- `scripts/exp_ra06_multiseed.py` — runs the control battery across ≥3 seeds and
+  reports the headline long-range-ZZ partial-r as mean ± std.
+- `EXECUTION_PLAN.md`, `RUNBOOK.md` rewrite (+ `RUNBOOK_starter_template.md`),
+  `scripts/reproduce_all.sh` (one-command regeneration).
+
 ### Added
 - `scripts/exp_ra03_controls.py` — Week 3 control battery that turns the raw
   feature/observable correlations into a defensible claim: (C1) cross-validated

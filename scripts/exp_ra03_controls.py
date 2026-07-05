@@ -69,7 +69,7 @@ from sklearn.model_selection import KFold
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 from qsae.reverse_arrow.transformer import TFIMTransformer
-from qsae.observables import compute_all_observables
+from qsae.observables import compute_all_observables_fast
 from qsae.sae import SAEConfig, TopKSAE
 from qsae.metrics import match_features, universality_score
 
@@ -125,7 +125,7 @@ def build_states_and_obs(n_samples: int, L: int, seed: int, cache: Path):
         states[k] = vecs[:, 0]
     print(f"[ra03] ED done in {time.time() - t0:.1f}s; computing observables …")
 
-    obs = compute_all_observables(states, L, h_values=h_mean)
+    obs = compute_all_observables_fast(states, L, h_values=h_mean)
     cache.parent.mkdir(parents=True, exist_ok=True)
     torch.save({"h_fields": h_fields, "states": states, "obs": obs, "h_mean": h_mean}, cache)
     print(f"[ra03] cached to {cache}")

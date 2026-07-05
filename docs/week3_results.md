@@ -128,11 +128,39 @@ This is the cleanest result in the study:
 
 Training SAEs from 3 seeds on the same activations and Hungarian-matching decoder
 directions gives mean matched cosine 0.37 and only **0.3%** of features matching at
-cos > 0.7. **The SAE feature basis is not universal across seeds** at this scale
-(N = 800, d_hidden = 256, k = 32). Consequently, claims about *individual* SAE
-features are weak. Importantly, the C1–C4 conclusions do **not** depend on the SAE
-basis — C1/C2 use the raw residual stream, and C4's partial-correlation logic holds
-for whichever feature is selected — so the main claim is robust to this limitation.
+cos > 0.7. **The SAE feature basis is not universal across seeds** at the default
+config (N = 800, d_hidden = 256, k = 32). Consequently, claims about *individual*
+SAE features are weak. Importantly, the C1–C4 conclusions do **not** depend on the
+SAE basis — C1/C2 use the raw residual stream, and C4's partial-correlation logic
+holds for whichever feature is selected — so the main claim is robust to this
+limitation.
+
+**Can the crack be fixed by hyperparameters?** (`exp_ra04_sae_grid.py`,
+`runs/ra04_sae_grid/`.) We swept d_hidden ∈ {256, 512, 1024} × k ∈ {8, 16, 32},
+3 seeds per cell, on 2000 activations — following the RUNBOOK's own suggested
+levers (widen the SAE, shrink k). The result is a **robust negative**:
+
+| | k=8 | k=16 | k=32 |
+|:--|:--:|:--:|:--:|
+| **d_hidden=256** | **0.059** | 0.033 | 0.008 |
+| **d_hidden=512** | 0.040 | 0.025 | 0.007 |
+| **d_hidden=1024** | 0.020 | 0.014 | 0.004 |
+
+<sub>Fraction of features matching across seeds at cos > 0.7. Mean matched cosine
+stays in 0.37–0.42 throughout. Full table incl. dead-fraction/recon in
+`runs/ra04_sae_grid/summary.md`.</sub>
+
+Smaller k helps (sparser features are more reproducible) and widening d_hidden
+*hurts* the matched fraction (more, and more dead, features to align). But even the
+best cell (d_hidden = 256, k = 8) reaches only **~6%** of features seed-stable —
+an order of magnitude better than the default, yet still far from a universal
+basis. **The non-universality is not a hyperparameter artifact.** This motivates
+framing the contribution at the level of the *representation* (the linear-probe
+results C1/C2/C4, which are basis-independent) rather than individual SAE features.
+
+<div align="center">
+<img src="../figures/ra04_sae_universality.png" width="640" alt="SAE cross-seed universality vs (d_hidden, k)"/>
+</div>
 
 ---
 

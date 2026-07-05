@@ -18,15 +18,19 @@ import pytest
 
 from qsae.observables import (
     compute_all_observables,
+    compute_all_observables_fast,
     entanglement_spectrum,
     half_chain_entanglement_entropy,
     long_range_zz,
+    long_range_zz_fast,
     longitudinal_magnetization,
     nearest_neighbor_zz,
     order_parameter,
     phase_proximity,
     transverse_magnetization,
+    transverse_magnetization_fast,
     zz_correlator,
+    zz_correlator_fast,
     zz_correlator_matrix,
 )
 
@@ -359,3 +363,52 @@ class TestLongRangeZZ:
         ordered = tfim_ground_states(n=n, h_values=np.array([0.2]))[0]
         disordered = tfim_ground_states(n=n, h_values=np.array([3.0]))[0]
         assert long_range_zz(ordered, n) > long_range_zz(disordered, n)
+
+
+class TestFastObservables:
+    """The dense-operator-free (bit-trick) path must match the dense path."""
+
+    @staticmethod
+    def _random_states(n, N, seed=0):
+        rng = np.random.default_rng(seed)
+        psi = rng.standard_normal((N, 1 << n)) + 1j * rng.standard_normal((N, 1 << n))
+        psi /= np.linalg.norm(psi, axis=1, keepdims=True)
+        return psi
+
+    def test_zz_and_x_match_dense(self):
+        n = 4
+        for psi in self._random_states(n, 5, seed=1):
+            # i != j only: the dense zz_correlator has a documented i==j quirk
+            # (it returns ⟨Z_i⟩, not ⟨I⟩); i==j is never used downstream.
+            for i in range(n):
+                for j in range(n):
+                    if i == j:
+                        continue
+                    assert zz_correlator_fast(psi, n, i, j) == pytest.approx(
+                        zz_correlator(psi, n, i, j), abs=1e-10)
+            np.testing.assert_allclose(
+                transverse_magnetization_fast(psi, n),
+                transverse_magnetization(psi, n), atol=1e-10)
+            assert long_range_zz_fast(psi, n) == pytest.approx(
+                long_range_zz(psi, n), abs=1e-10)
+
+    def test_compute_all_fast_matches_dense(self):
+        n = 5
+        states = self._random_states(n, 6, seed=2)
+        h = np.random.default_rng(3).uniform(0.1, 2.0, size=6)
+        slow = compute_all_observables(states, n, h_values=h)
+        fast = compute_all_observables_fast(states, n, h_values=h)
+        for key in ("entropy", "mean_nn_zz", "mean_x", "long_range_zz",
+                    "order_param_proxy", "phase_proximity"):
+            np.testing.assert_allclose(fast[key], slow[key], atol=1e-10,
+                                       err_msg=f"mismatch in {key}")
+
+    def test_fast_matches_dense_on_tfim_ground_states(self):
+        from qsae.datasets import tfim_ground_states
+        n = 6
+        states = tfim_ground_states(n=n, h_values=np.linspace(0.2, 2.0, 5))
+        slow = compute_all_observables(states, n)
+        fast = compute_all_observables_fast(states, n)
+        np.testing.assert_allclose(fast["long_range_zz"], slow["long_range_zz"], atol=1e-9)
+        np.testing.assert_allclose(fast["mean_x"], slow["mean_x"], atol=1e-9)
+        np.testing.assert_allclose(fast["entropy"], slow["entropy"], atol=1e-9)

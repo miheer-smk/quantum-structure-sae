@@ -248,6 +248,102 @@ def order_parameter(state: np.ndarray, n: int) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Fast, dense-operator-free observables (scale to larger L)
+# ---------------------------------------------------------------------------
+# The functions above build explicit 2^n × 2^n Pauli operators via np.kron. That
+# is fine at L = 8 (256×256) but at L = 12 a single dense operator is 4096×4096
+# complex128 ≈ 268 MB, so the dense path is infeasible. The functions below
+# compute the same expectation values directly on the state vector using bit
+# arithmetic — O(2^n) per observable, no dense operators. They follow the same
+# site↔bit convention as the np.kron construction above (site 0 = most
+# significant qubit); `TestFastObservables` asserts they match the dense path.
+
+def _z_signs(n: int, site: int, dim: int) -> np.ndarray:
+    """Per-basis-state eigenvalue (+1/−1) of Z at `site` (site 0 = MSB)."""
+    bit = n - 1 - site
+    b = (np.arange(dim) >> bit) & 1
+    return 1.0 - 2.0 * b
+
+
+def zz_correlator_fast(state: np.ndarray, n: int, i: int, j: int) -> float:
+    """⟨Z_i Z_j⟩ via the diagonal of ZZ (no dense operator)."""
+    dim = state.shape[0]
+    p = (state.conj() * state).real
+    return float(np.sum(p * _z_signs(n, i, dim) * _z_signs(n, j, dim)))
+
+
+def nearest_neighbor_zz_fast(state: np.ndarray, n: int) -> np.ndarray:
+    return np.array([zz_correlator_fast(state, n, i, i + 1) for i in range(n - 1)])
+
+
+def long_range_zz_fast(state: np.ndarray, n: int) -> float:
+    return zz_correlator_fast(state, n, 0, n - 1)
+
+
+def transverse_magnetization_fast(state: np.ndarray, n: int) -> np.ndarray:
+    """Per-site ⟨X_i⟩ via a bit-flip permutation of the state vector."""
+    dim = state.shape[0]
+    idx = np.arange(dim)
+    out = np.empty(n)
+    for i in range(n):
+        flip = 1 << (n - 1 - i)
+        out[i] = float(np.real(np.sum(state.conj() * state[idx ^ flip])))
+    return out
+
+
+def longitudinal_magnetization_fast(state: np.ndarray, n: int) -> np.ndarray:
+    """Per-site ⟨Z_i⟩ (diagonal, no dense operator)."""
+    dim = state.shape[0]
+    p = (state.conj() * state).real
+    return np.array([float(np.sum(p * _z_signs(n, i, dim))) for i in range(n)])
+
+
+def compute_all_observables_fast(
+    states: np.ndarray,
+    n: int,
+    h_values: np.ndarray | None = None,
+    h_c: float = 1.0,
+) -> dict[str, np.ndarray]:
+    """
+    Dense-operator-free version of :func:`compute_all_observables`, returning the
+    same keys used downstream (entropy, nn_zz, mean_nn_zz, transverse_mag, mean_x,
+    order_param, long_range_zz, order_param_proxy, [phase_proximity]).
+
+    Entropy reuses :func:`half_chain_entanglement_entropy` (already efficient —
+    it diagonalises only the reduced density matrix, 2^{n/2} × 2^{n/2}).
+    Suitable for L up to the exact-diagonalisation ceiling (~14 on 16 GB RAM).
+    """
+    N = states.shape[0]
+    entropy = np.empty(N)
+    nn_zz = np.empty((N, n - 1))
+    transverse_m = np.empty((N, n))
+    order_param = np.empty(N)
+    lr_zz = np.empty(N)
+
+    for k in range(N):
+        psi = states[k]
+        entropy[k] = half_chain_entanglement_entropy(psi, n)
+        nn_zz[k] = nearest_neighbor_zz_fast(psi, n)
+        transverse_m[k] = transverse_magnetization_fast(psi, n)
+        order_param[k] = float(np.mean(np.abs(longitudinal_magnetization_fast(psi, n))))
+        lr_zz[k] = long_range_zz_fast(psi, n)
+
+    obs: dict[str, np.ndarray] = {
+        "entropy": entropy,
+        "nn_zz": nn_zz,
+        "mean_nn_zz": nn_zz.mean(axis=1),
+        "transverse_mag": transverse_m,
+        "mean_x": transverse_m.mean(axis=1),
+        "order_param": order_param,
+        "long_range_zz": lr_zz,
+        "order_param_proxy": np.sqrt(np.clip(lr_zz, 0.0, None)),
+    }
+    if h_values is not None:
+        obs["phase_proximity"] = phase_proximity(h_values, h_c=h_c)
+    return obs
+
+
+# ---------------------------------------------------------------------------
 # Phase proximity
 # ---------------------------------------------------------------------------
 
