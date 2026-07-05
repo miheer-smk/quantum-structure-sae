@@ -7,6 +7,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (Phase 2 — causal, pulled forward)
+- `scripts/exp_ra07_causal.py` — activation-patching causal test. Ablating the
+  ⟨Z₀Z_{L-1}⟩-predictive residual direction barely changes energy prediction
+  (RMSE 0.0112 → 0.0137) while random directions degrade it ~9× more (→ 0.100),
+  even though the ablation is effective (order-probe R² collapses 0.97 → −9.6).
+  The order parameter is encoded in a low-variance (≈12× less than random),
+  approximately task-orthogonal subspace — **represented but not load-bearing**
+  for energy prediction. Honest negative for the naive "used" hypothesis; written
+  up in `docs/week3_results.md` §3b and the abstract.
+
 ### Added (Phase 1 — toward workshop abstract)
 - `scripts/exp_ra04_sae_grid.py` — SAE cross-seed universality sweep
   (d_hidden × k). **Robust negative result:** widening d_hidden / shrinking k

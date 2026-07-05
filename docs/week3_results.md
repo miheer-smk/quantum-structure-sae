@@ -179,6 +179,46 @@ results C1/C2/C4, which are basis-independent) rather than individual SAE featur
 
 ---
 
+## 3b. Causal test — decodable vs. used (`runs/ra07_causal/`)
+
+C1–C4 are correlational: they show the order-parameter information is *present*.
+Is it *used*? We test this by **activation patching** (`exp_ra07_causal.py`): fit
+the ridge direction **d** most predictive of ⟨Z₀Z_{L-1}⟩ on the last-layer
+residual stream (train split), then ablate it — x → x − (x·d)d at every position,
+which removes exactly the d-component of the pooled vector the head reads — and
+measure the effect on the transformer's **energy** prediction on held-out inputs.
+
+| condition | energy RMSE (all) | ordered (h̄<1) | paramagnetic (h̄>1) |
+|:--|:--:|:--:|:--:|
+| baseline | 0.0112 | 0.0115 | 0.0110 |
+| ablate **order** direction | 0.0137 | 0.0125 | 0.0145 |
+| ablate random direction (mean of 15) | 0.1001 | 0.0966 | 0.1006 |
+
+**The result is a clean, honest negative for the naive "used" hypothesis — and a
+more interesting positive.** Ablating the order direction barely moves energy
+prediction (+0.001 in the ordered phase), while ablating a *random* unit direction
+degrades it ~9× as much (+0.085). The ablation is genuinely effective — the
+⟨Z₀Z_{L-1}⟩ probe R² collapses from 0.97 to −9.6 once **d** is removed — so this is
+not a failed intervention. The mechanism is visible in the variance: the residual
+stream carries only **0.006** variance along **d** versus **0.074** along a random
+direction (≈12× less). 
+
+**Interpretation.** The transformer encodes the non-local order parameter in a
+**low-variance subspace approximately orthogonal to its energy-prediction
+pathway**: the order representation is *represented but not load-bearing* for the
+trained objective. Physically this is sensible — ground-state energy is dominated
+by local/mean-field terms, so the network does not *need* long-range order to
+predict energy well, yet it still organises a linearly-decodable order
+representation (more so than an untrained network; §3 C1) as a by-product. This
+refines rather than inflates the paper's claim, and raises a genuine question for
+follow-up: *why* does the representation encode order it does not use?
+
+<div align="center">
+<img src="../figures/ra07_causal.png" width="560" alt="Causal patching: ablating the order direction vs random directions"/>
+</div>
+
+---
+
 ## 4. What can and cannot be claimed
 
 **Defensible.**
@@ -187,11 +227,17 @@ results C1/C2/C4, which are basis-independent) rather than individual SAE featur
    stronger than in an untrained network, the raw input, a degree-2 polynomial of
    the input, or the mean field, and it strengthens with depth.
 2. This beyond-mean-field structure survives partial-correlation control (partial-r
-   = 0.69) and a strict permutation null (p ≈ 0).
+   = 0.71 ± 0.01 over 3 seeds) and a strict permutation null (p ≈ 0).
 3. The pipeline has calibrated negative controls: it reports "trivial" for the
    observable (phase proximity) that is genuinely trivial.
+4. The order-parameter representation is **disentangled from the energy-prediction
+   pathway**: it lives in a low-variance, approximately task-orthogonal subspace
+   (causal patching, §3b) — encoded, but not load-bearing for the trained objective.
 
 **Not (yet) supported.**
+- That the model *uses* the order-parameter direction for its energy prediction —
+  causal patching shows it does **not** (§3b). The claim is about representation,
+  not mechanism-for-the-task.
 - That *individual, monosemantic SAE features* correspond one-to-one to named
   observables — the SAE basis is seed-dependent (C5).
 - Any "quantum advantage" claim — out of scope by design (see RUNBOOK).

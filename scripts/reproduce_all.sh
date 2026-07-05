@@ -49,6 +49,9 @@ echo "[3c] multi-seed headline (long-range-ZZ partial-r, mean +/- std)"
 $PY scripts/exp_ra06_multiseed.py --ckpt "$CKPT" --seeds 42,43,44 \
     --n_samples "$N_CTRL" --n_perm "$N_PERM" --sae_epochs "$SAE_EPOCHS"
 
+echo "[3d] causal activation patching (decodable vs used)"
+$PY scripts/exp_ra07_causal.py --ckpt "$CKPT" --n_samples "$N_CTRL"
+
 echo "[4/5] classical-data validation (Bars-and-Stripes QNN -> shadow -> SAE)"
 if [[ "${SKIP_BAS:-0}" == "1" ]]; then
   echo "    SKIP_BAS=1 — skipping"

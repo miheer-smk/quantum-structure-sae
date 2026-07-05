@@ -32,6 +32,9 @@ correctly identified as such — a calibrated negative control. This is, to our
 knowledge, a clean demonstration that a classical network trained only on energies
 develops a depth-assembled, non-local representation of quantum order, established
 with the controls needed to rule out the trivial input-dependence explanation.
+Activation patching further shows this representation is *disentangled from* the
+energy-prediction pathway — it lives in a low-variance, task-orthogonal subspace —
+so the network represents quantum order it does not strictly need for its objective.
 
 ## 1. Introduction
 
@@ -105,6 +108,19 @@ structure — whereas phase proximity drops to 0.00, correctly identifying it as
 pure mean-field quantity. This calibrated negative control is central: it shows the
 method does not simply relabel the input.
 
+**Causal patching — decodable vs. used.** We ablate the residual direction most
+predictive of ⟨Z₀Z_{L−1}⟩ (project it out at the last layer) and measure the effect
+on the model's *energy* prediction. The ablation is effective — the order-parameter
+probe R² collapses from 0.97 to −9.6 — yet energy-prediction RMSE barely moves
+(0.0112 → 0.0137), while ablating random directions of equal norm degrades it ~9×
+more (→ 0.100). The residual stream carries ~12× less variance along the order
+direction than along a random one. **The order parameter is encoded in a
+low-variance subspace approximately orthogonal to the energy-prediction pathway:
+represented, but not load-bearing for the trained objective.** This is an honest
+negative for the naive "the model uses order to predict energy" hypothesis, and a
+more interesting positive — the network organises a disentangled order
+representation it does not need for its task.
+
 ## 5. What can and cannot be claimed
 
 **Supported.** (1) The trained representation linearly encodes the non-local order
@@ -129,10 +145,12 @@ beyond-mean-field result should be reproduced on a non-integrable Hamiltonian (T
 here; the mean-field baselines are expected to weaken as L grows, so the order-
 parameter effect should be re-checked at L = 12–14 (exact-diagonalisation ceiling)
 and, for genuinely non-polynomial tasks, with disordered couplings J_{ij}.
-**Causality.** All controls are correlational; an activation-patching intervention on
-the ⟨Z₀Z_{L−1}⟩-predictive direction would establish that the model *uses* this
-structure, not just that it is decodable. These define the path from this abstract to
-a full paper.
+**Causality — addressed, with a twist.** Activation patching (above) shows the model
+does *not* use the order direction for energy prediction; it is decodable but not
+load-bearing. This reframes the open question from "does the model use it?" to "why
+does the representation encode order it does not need?" — a question best pursued on
+a non-integrable Hamiltonian and at larger L, where long-range order is more likely
+to become task-relevant. These define the path from this abstract to a full paper.
 
 ## References
 
