@@ -42,10 +42,17 @@ where the signal is trivial.
 
 **Headline result.** The residual stream linearly encodes the **non-local order
 parameter** ⟨Z₀Z_{L-1}⟩ substantially better than an untrained network, the raw
-input, a degree-2 polynomial of the input, or the mean field; this signal survives
-partial-correlation control (partial-r = 0.69), beats a strict permutation null
-(p ≈ 0), and strengthens with network depth — evidence that training induces a
-genuinely non-local, quantum-structured representation.
+input, a degree-2 polynomial of the input, or the mean field; the effect is stable
+across seeds (partial-correlation vs. the mean field = **0.71 ± 0.01**), beats a
+strict permutation null (p ≈ 0), and **strengthens with network depth** — evidence
+that training induces a genuinely non-local, quantum-structured representation.
+
+**And a twist (causal test).** Activation patching shows this order representation
+is **decodable but not load-bearing**: ablating it barely changes the model's energy
+prediction (while random directions degrade it ~9×), because it lives in a
+low-variance subspace roughly *orthogonal* to the energy-prediction pathway. The
+network encodes quantum order it does not strictly need for its task — a cleaner and
+more interesting statement than "it uses it."
 
 ---
 
@@ -53,16 +60,18 @@ genuinely non-local, quantum-structured representation.
 
 - 🎯 **Energy prediction** — TFIMTransformer reaches test R² = 0.9999, a 3.5×
   RMSE improvement over a degree-2 polynomial baseline.
-- 🔬 **Interpretability with controls** — a linear-probe + SAE analysis backed by
-  a permutation null, an untrained-network control, and mean-field partial
-  correlation. The pipeline reports "trivial" for the observable (phase proximity)
-  that *is* trivial.
-- 🧭 **Non-local structure is learned** — the ⟨Z₀Z_{L-1}⟩ order parameter is the
-  one observable where training, and depth, demonstrably help.
+- 🔬 **Interpretability with controls** — linear probes backed by a permutation
+  null, an *untrained-network* control, mean-field partial correlation, and a depth
+  sweep. The pipeline reports "trivial" for the observable (phase proximity) that
+  *is* trivial.
+- 🧭 **Non-local structure is learned** — ⟨Z₀Z_{L-1}⟩ is the one observable where
+  training and depth demonstrably help (partial-r = 0.71 ± 0.01 over 3 seeds).
+- 🧨 **Causal, not just correlational** — activation patching shows the order
+  direction is *decodable but not load-bearing* for the model's task.
 - 🧪 **Validated on classical data** — a Bars-and-Stripes QNN→shadow→SAE run
-  recovers monosemantic features (monosemantic fraction 0.61) as a sanity check.
-- ✅ **Reproducible** — 37 passing tests, deterministic seeds, cached exact
-  diagonalisation, CI on Python 3.10 / 3.11 / 3.12.
+  recovers monosemantic features (fraction 0.61) as a sanity check.
+- ✅ **Reproducible** — 40 passing tests, deterministic seeds, a sparse ED solver
+  that scales to L ≈ 14, one-command `reproduce_all.sh`, CI on Python 3.10–3.12.
 
 ---
 
@@ -117,8 +126,8 @@ controls below (N = 800, 500 permutations — [`docs/week3_results.md`](docs/wee
 
 - **⟨Z₀Z_{L-1}⟩** is decoded far better by the *trained* network than by an
   untrained one, the raw input, or the mean field — and its decodability rises with
-  depth. **Partial-r given the mean field = 0.69**: genuine beyond-mean-field
-  structure.
+  depth (L0 → L2: 0.92 → 0.96). **Partial-r given the mean field = 0.71 ± 0.01**
+  (3 seeds): genuine beyond-mean-field structure.
 - **Phase proximity** is perfectly decodable from the mean field alone
   (partial-r = 0.00) — a calibrated *negative control* showing the method does not
   over-claim.
@@ -138,7 +147,32 @@ parameter (4th group) is where learning clearly helps.</i></sub>
 > artifact). Claims are therefore made at the level of the representation (probes,
 > C1/C2/C4), not individual features. See [`docs/week3_results.md`](docs/week3_results.md) §3.
 
-### 3 · Pipeline validation on classical data
+### 3 · Decodable vs. *used* — a causal test
+
+Correlational controls show the order information is *present*; activation patching
+asks whether it is *used*. We ablate the residual direction most predictive of
+⟨Z₀Z_{L-1}⟩ and measure the effect on the model's **energy** prediction
+([`exp_ra07_causal.py`](scripts/exp_ra07_causal.py)):
+
+<div align="center">
+
+| Ablate | Energy RMSE | ordered (h̄<1) | paramagnetic |
+|:---|:---:|:---:|:---:|
+| — (baseline) | 0.0112 | 0.0115 | 0.0110 |
+| **order direction** | 0.0137 | 0.0125 | 0.0145 |
+| random direction (×15) | 0.100 | 0.097 | 0.101 |
+
+</div>
+
+The ablation is genuinely effective — the ⟨Z₀Z_{L-1}⟩ probe R² collapses from 0.97
+to −9.6 — yet energy prediction barely moves, while random directions of equal norm
+degrade it ~9× more. The residual stream carries ~12× less variance along the order
+direction than along a random one. **The order parameter is encoded in a
+low-variance, task-orthogonal subspace: represented, but not load-bearing for the
+trained objective** — an honest negative for the naive "used" hypothesis, and a
+more interesting positive.
+
+### 4 · Pipeline validation on classical data
 
 A 9-qubit **Bars-and-Stripes** QNN→classical-shadow→SAE run
 ([`docs/exp01_bas_results.md`](docs/exp01_bas_results.md)): QNN test accuracy
@@ -189,30 +223,41 @@ cd quantum-structure-sae
 python -m venv .venv && source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 
-pytest -q                        # 37 tests, ~35 s
+pytest -q                        # 40 tests, ~35 s
 python scripts/smoke_test.py     # end-to-end QNN → shadow → SAE (~15 s)
 ```
 
 ## Reproducing the results
 
 ```bash
-# --- Week 1: train the transformer + baselines -----------------------------
+# Everything, one command (FAST=1 for a quick pass, SKIP_BAS=1 to skip the QNN run):
+bash scripts/reproduce_all.sh
+```
+
+<details>
+<summary>…or step by step</summary>
+
+```bash
+# --- Stage 1: train the transformer + baselines ----------------------------
 python scripts/exp_ra01_train_transformer.py          # → runs/ra01_wide/best.pt
 python scripts/ra01_baseline_check.py --ckpt runs/ra01_wide/best.pt
 
-# --- Week 3: SAE feature ↔ observable correlations --------------------------
+# --- Stage 2: SAE feature ↔ observable correlations ------------------------
 python scripts/exp_ra02_observables.py --ckpt runs/ra01_wide/best.pt --n_samples 500
-# → runs/ra02_observables/{correlation_heatmap.png, top_features.json}
 
-# --- Week 3: the control battery (C1–C5) — the publishable analysis ---------
+# --- Stage 2: the control battery (C1–C5) — the core analysis --------------
 python scripts/exp_ra03_controls.py --ckpt runs/ra01_wide/best.pt \
     --n_samples 800 --n_perm 500 --sae_epochs 200
-# → runs/ra03_controls/{results.json, summary.md, fig_probe_r2.png,
-#    fig_layer_sweep.png, fig_null.png, fig_partial.png}
+
+# --- Stage 2: SAE universality sweep, multi-seed error bars, causal test ---
+python scripts/exp_ra04_sae_grid.py --ckpt runs/ra01_wide/best.pt
+python scripts/exp_ra06_multiseed.py --seeds 42,43,44
+python scripts/exp_ra07_causal.py --ckpt runs/ra01_wide/best.pt
 
 # --- Classical-data validation ---------------------------------------------
 python scripts/exp01_bas3.py                          # → runs/exp01/metrics.json
 ```
+</details>
 
 ---
 
@@ -232,21 +277,26 @@ src/qsae/
     └── data.py          ← disordered-TFIM dataset, exact-diagonalisation kernel
 
 scripts/
-├── exp_ra01_train_transformer.py   ← Week 1: train transformer
-├── ra01_baseline_check.py          ← Week 1: baseline comparison + plots
-├── exp_ra02_observables.py         ← Week 3: SAE on activations + correlations
-├── exp_ra03_controls.py            ← Week 3: control battery (C1–C5)
+├── exp_ra01_train_transformer.py   ← Stage 1: train transformer
+├── ra01_baseline_check.py          ← Stage 1: baseline comparison + plots
+├── exp_ra02_observables.py         ← Stage 2: SAE on activations + correlations
+├── exp_ra03_controls.py            ← Stage 2: control battery (C1–C5)
+├── exp_ra04_sae_grid.py            ← Stage 2: SAE universality sweep (C5 revisited)
+├── exp_ra06_multiseed.py           ← Stage 2: multi-seed headline (error bars)
+├── exp_ra07_causal.py              ← Stage 2: causal activation patching
 ├── exp01_bas3.py                   ← Bars-and-Stripes 3×3 QNN experiment
+├── reproduce_all.sh                ← one command → every result + figure
 └── smoke_test.py                   ← end-to-end sanity check
 
-tests/                              ← 37 tests (SAE, shadows, transformer, observables)
+tests/                              ← 40 tests (SAE, shadows, transformer, observables)
 
 docs/
-├── week1_results.md        ← transformer training + baselines
-├── week3_results.md        ← SAE feature↔observable + control battery (C1–C5)
+├── week1_results.md        ← Stage 1: transformer training + baselines
+├── week3_results.md        ← Stage 2: probes, controls (C1–C5), causal test
 └── exp01_bas_results.md    ← Bars-and-Stripes QNN→shadow→SAE validation
 
-figures/                    ← committed result figures (incl. ra03 controls)
+paper/workshop_abstract.md  ← 4-page extended-abstract draft
+figures/                    ← committed result figures
 notebooks/                  ← exploratory Jupyter notebooks
 ```
 

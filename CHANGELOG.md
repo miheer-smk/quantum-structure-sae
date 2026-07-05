@@ -7,6 +7,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (Stage 3 infra — scaling)
+- `compute_ground_states_sparse` + sparse Pauli builders in
+  `reverse_arrow/data.py` — memory-safe Lanczos ground-state solver supporting
+  per-site fields *and* per-bond couplings, scaling to L ≈ 14 (dense path caps at
+  L=8; ~0.03 s/state at L=12). Verified against the dense kernel (`test_sparse_solver.py`,
+  4 tests). Groundwork for the L-scaling and disordered-coupling studies.
+- README polished to a release-quality state: multi-seed error bars, the causal
+  result (§3), updated highlights/structure/reproduction, one-command repro.
+
 ### Added (Phase 2 — causal, pulled forward)
 - `scripts/exp_ra07_causal.py` — activation-patching causal test. Ablating the
   ⟨Z₀Z_{L-1}⟩-predictive residual direction barely changes energy prediction

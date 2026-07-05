@@ -110,6 +110,83 @@ def compute_ground_energies(
 
 
 # ---------------------------------------------------------------------------
+# Sparse ground-state solver (scales past the dense L=8 ceiling)
+# ---------------------------------------------------------------------------
+# The dense path above materialises x_ops of shape (L, 2^L, 2^L) — 1.6 GB at
+# L=12 — so it cannot reach the larger systems needed for the scaling study.
+# The sparse path builds each Pauli string as a scipy.sparse operator once
+# (O(2^L) nnz), then forms H = -Σ_b J_b Z_b Z_{b+1} - Σ_i h_i X_i per disorder
+# realisation and finds the ground state via Lanczos (eigsh, k=1). It supports
+# per-site fields h_i *and* per-bond couplings J_b (the latter for the
+# disordered-coupling / non-integrable extensions).
+
+def _sparse_pauli_ops(L: int):
+    """Return (zz_bonds, x_sites): lists of sparse Z_iZ_{i+1} and X_i operators."""
+    from scipy.sparse import identity, kron, csr_matrix
+
+    I2 = identity(2, format="csr", dtype=np.float64)
+    X = csr_matrix(np.array([[0.0, 1.0], [1.0, 0.0]]))
+    Z = csr_matrix(np.array([[1.0, 0.0], [0.0, -1.0]]))
+
+    def op_at(op, site):
+        out = None
+        for k in range(L):
+            factor = op if k == site else I2
+            out = factor if out is None else kron(out, factor, format="csr")
+        return out
+
+    x_sites = [op_at(X, i) for i in range(L)]
+    z_sites = [op_at(Z, i) for i in range(L)]
+    zz_bonds = [(z_sites[i] @ z_sites[i + 1]).tocsr() for i in range(L - 1)]
+    return zz_bonds, x_sites
+
+
+def _assemble_sparse_H(zz_bonds, x_sites, h: np.ndarray, J):
+    """H = -Σ_b J_b Z_b Z_{b+1} - Σ_i h_i X_i for one realisation."""
+    L = len(x_sites)
+    Jb = np.broadcast_to(np.asarray(J, dtype=np.float64), (L - 1,))
+    H = None
+    for b in range(L - 1):
+        term = -Jb[b] * zz_bonds[b]
+        H = term if H is None else H + term
+    for i in range(L):
+        H = H + (-float(h[i])) * x_sites[i]
+    return H.tocsr()
+
+
+def compute_ground_states_sparse(
+    h_fields: np.ndarray,          # (N, L) per-site fields
+    J_fields=1.0,                  # scalar, (L-1,), or (N, L-1) per-bond couplings
+    return_states: bool = True,
+):
+    """
+    Ground-state energies (and optionally vectors) for N disorder realisations via
+    sparse Lanczos — memory-safe for L up to ~14 on 16 GB RAM.
+
+    Returns
+    -------
+    energies : (N,) float64
+    states   : (N, 2**L) complex128   (only if return_states)
+    """
+    from scipy.sparse.linalg import eigsh
+
+    N, L = h_fields.shape
+    zz_bonds, x_sites = _sparse_pauli_ops(L)
+    J_arr = np.asarray(J_fields, dtype=np.float64)
+
+    energies = np.empty(N, dtype=np.float64)
+    states = np.empty((N, 1 << L), dtype=np.complex128) if return_states else None
+    for k in range(N):
+        Jk = J_arr[k] if J_arr.ndim == 2 else J_arr
+        H = _assemble_sparse_H(zz_bonds, x_sites, h_fields[k], Jk)
+        w, v = eigsh(H, k=1, which="SA")
+        energies[k] = float(w[0])
+        if return_states:
+            states[k] = v[:, 0]
+    return (energies, states) if return_states else energies
+
+
+# ---------------------------------------------------------------------------
 # Dataset
 # ---------------------------------------------------------------------------
 
