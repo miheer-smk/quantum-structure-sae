@@ -167,11 +167,48 @@ does the representation encode order it does not need?" — a question best purs
 a non-integrable Hamiltonian and at larger L, where long-range order is more likely
 to become task-relevant. These define the path from this abstract to a full paper.
 
+## 7. Related work
+
+**Sparse autoencoders & mechanistic interpretability.** Dictionary-learning with
+sparse autoencoders was popularised by Bricken et al. (2023) and scaled to a
+production model by Templeton et al. (2024); Gao et al. (2024) introduced the TopK
+SAE we use and its evaluation methodology; Marks et al. (2024) build causal *feature
+circuits*, motivating our decodable-vs-used intervention. Our C5 finding — that the
+SAE feature basis is not seed-universal here — is why we make claims at the
+representation (linear-probe) level rather than the feature level.
+
+**Interpreting networks trained on physical data.** Iten et al. (2020, *SciNet*)
+show a neural network trained on physical time-series recovers the minimal set of
+physical parameters; "From Neurons to Neutrons" (2024) reverse-engineers a network
+trained on nuclear data. We differ in target and method: a *quantum many-body*
+ground-state task, probed for specific known observables with an explicit
+untrained-network / mean-field control battery, and a causal patching test.
+
+**Quantum many-body & measurement.** Observables and the TFIM phase structure follow
+Sachdev (2011) and Calabrese & Cardy (2004); classical-shadow estimation (used in the
+Bars-and-Stripes validation) follows Huang, Kueng & Preskill (2020).
+
 ## References
 
-*(Verify exact titles/venues before submission — do not cite from memory.)*
-Gao et al., *Scaling and evaluating sparse autoencoders*, 2024. Bricken et al.,
-*Towards Monosemanticity*, 2023. Huang, Kueng & Preskill, *Predicting many properties
-of a quantum system from very few measurements*, Nature Physics 2020. Sachdev,
-*Quantum Phase Transitions*, 2nd ed., 2011. Calabrese & Cardy, *Entanglement entropy
-and quantum field theory*, 2004.
+*Verified July 2026; re-confirm venue/pagination against the camera-ready CFP.*
+
+1. Bricken et al. (2023). *Towards Monosemanticity: Decomposing Language Models With
+   Dictionary Learning.* Transformer Circuits.
+   https://transformer-circuits.pub/2023/monosemantic-features
+2. Templeton et al. (2024). *Scaling Monosemanticity: Extracting Interpretable
+   Features from Claude 3 Sonnet.* Transformer Circuits.
+   https://transformer-circuits.pub/2024/scaling-monosemanticity
+3. Gao, Dupré la Tour, Tillman, Goh, Troll, Radford, Sutskever, Leike & Wu (2024).
+   *Scaling and evaluating sparse autoencoders.* arXiv:2406.04093.
+4. Marks, Rager, Michaud, Belinkov, Bau & Mueller (2024). *Sparse Feature Circuits:
+   Discovering and Editing Interpretable Causal Graphs in Language Models.*
+   arXiv:2403.19647.
+5. Iten, Metger, Wilming, del Rio & Renner (2020). *Discovering Physical Concepts
+   with Neural Networks.* Phys. Rev. Lett. 124, 010508. arXiv:1807.10300.
+6. *From Neurons to Neutrons: A Case Study in Interpretability* (2024).
+   arXiv:2405.17425.
+7. Huang, Kueng & Preskill (2020). *Predicting many properties of a quantum system
+   from very few measurements.* Nature Physics 16, 1050. arXiv:2002.08953.
+8. Sachdev (2011). *Quantum Phase Transitions*, 2nd ed. Cambridge University Press.
+9. Calabrese & Cardy (2004). *Entanglement entropy and quantum field theory.*
+   J. Stat. Mech. P06002.
