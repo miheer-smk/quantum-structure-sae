@@ -139,6 +139,22 @@ both stable, not single-run artifacts.
 - entropy and ⟨X⟩ retain moderate beyond-mean-field structure; ⟨ZᵢZ_{i+1}⟩ is mostly
   mean-field. See `fig_partial.png`.
 
+**Effect sizes with bootstrap CIs** (`exp_ra11_bootstrap.py`, `runs/ra11_bootstrap/`).
+Rather than lean on extreme p-values (which shrink mechanically with N), we report
+the *representation-level* headline — an out-of-fold ridge probe of the whole
+residual stream, not a single SAE feature — with 95% percentile-bootstrap CIs
+(N = 800, 4000 resamples):
+
+| statistic (⟨Z₀Z_{L-1}⟩, trained) | estimate | 95% CI |
+|:--|:--:|:--:|
+| probe R² | 0.962 | [0.951, 0.970] |
+| Pearson r (pred vs true) | 0.981 | [0.976, 0.985] |
+| **partial-r given mean-h** | **0.934** | **[0.920, 0.948]** |
+
+The representation-level partial correlation (0.93) is *higher* than the
+single-best-SAE-feature value (0.71, C4) — the full linear probe uses the whole
+64-dim residual, and its beyond-mean-field association is tight and well away from 0.
+
 ### C5 — Cross-seed SAE universality (a negative result, reported honestly)
 
 Training SAEs from 3 seeds on the same activations and Hungarian-matching decoder

@@ -280,6 +280,31 @@ def long_range_zz_fast(state: np.ndarray, n: int) -> float:
     return zz_correlator_fast(state, n, 0, n - 1)
 
 
+def _z_expect(state: np.ndarray, n: int, site: int) -> float:
+    """Single-site ⟨Z_site⟩ (diagonal, no dense operator)."""
+    dim = state.shape[0]
+    p = (state.conj() * state).real
+    return float(np.sum(p * _z_signs(n, site, dim)))
+
+
+def connected_zz_correlator_fast(state: np.ndarray, n: int, i: int, j: int) -> float:
+    """
+    Connected correlator ⟨Z_i Z_j⟩_c = ⟨Z_i Z_j⟩ − ⟨Z_i⟩⟨Z_j⟩.
+
+    Unlike the raw correlator, the connected version subtracts the factorised
+    (mean-field / product) part, so it isolates the genuinely *non-local*
+    correlation.  In a Z₂-symmetric ground state ⟨Z_i⟩ = 0 and it equals the raw
+    correlator; in a symmetry-broken (e.g. mixed-field) state the two differ, and
+    the connected version is the physically meaningful "beyond-input" quantity.
+    """
+    return (zz_correlator_fast(state, n, i, j)
+            - _z_expect(state, n, i) * _z_expect(state, n, j))
+
+
+def long_range_zz_connected_fast(state: np.ndarray, n: int) -> float:
+    return connected_zz_correlator_fast(state, n, 0, n - 1)
+
+
 def transverse_magnetization_fast(state: np.ndarray, n: int) -> np.ndarray:
     """Per-site ⟨X_i⟩ via a bit-flip permutation of the state vector."""
     dim = state.shape[0]
@@ -319,6 +344,7 @@ def compute_all_observables_fast(
     transverse_m = np.empty((N, n))
     order_param = np.empty(N)
     lr_zz = np.empty(N)
+    lr_zz_c = np.empty(N)
 
     for k in range(N):
         psi = states[k]
@@ -327,6 +353,7 @@ def compute_all_observables_fast(
         transverse_m[k] = transverse_magnetization_fast(psi, n)
         order_param[k] = float(np.mean(np.abs(longitudinal_magnetization_fast(psi, n))))
         lr_zz[k] = long_range_zz_fast(psi, n)
+        lr_zz_c[k] = long_range_zz_connected_fast(psi, n)
 
     obs: dict[str, np.ndarray] = {
         "entropy": entropy,
@@ -336,6 +363,7 @@ def compute_all_observables_fast(
         "mean_x": transverse_m.mean(axis=1),
         "order_param": order_param,
         "long_range_zz": lr_zz,
+        "long_range_zz_connected": lr_zz_c,
         "order_param_proxy": np.sqrt(np.clip(lr_zz, 0.0, None)),
     }
     if h_values is not None:

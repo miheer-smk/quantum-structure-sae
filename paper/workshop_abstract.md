@@ -102,11 +102,14 @@ single-feature |r| over all alive features (a multiple-comparisons control) yiel
 null 95th percentile of 0.12–0.16; the observed values (0.79–0.90) give empirical
 p ≈ 0.
 
-**Mean-field partial correlation (C4).** Controlling for h̄, the best feature for
-⟨Z₀Z_{L−1}⟩ retains partial-r = 0.71 ± 0.01 over 3 seeds — genuine beyond-mean-field
-structure — whereas phase proximity drops to 0.00, correctly identifying it as a
-pure mean-field quantity. This calibrated negative control is central: it shows the
-method does not simply relabel the input.
+**Mean-field partial correlation (C4).** Controlling for h̄, the representation
+retains a strong beyond-mean-field association with ⟨Z₀Z_{L−1}⟩ — a whole-residual
+linear probe gives partial-r = 0.934, 95% bootstrap CI [0.920, 0.948] (the
+single-best-SAE-feature analogue is 0.71 ± 0.01 over 3 seeds) — whereas phase
+proximity drops to 0.00, correctly identifying it as a pure mean-field quantity.
+This calibrated negative control is central: it shows the method does not simply
+relabel the input. (We report bootstrap CIs rather than the mechanically-tiny
+N-dependent p-values.)
 
 **Causal patching — decodable vs. used.** We ablate the residual direction most
 predictive of ⟨Z₀Z_{L−1}⟩ (project it out at the last layer) and measure the effect

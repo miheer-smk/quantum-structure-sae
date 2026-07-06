@@ -412,3 +412,39 @@ class TestFastObservables:
         np.testing.assert_allclose(fast["long_range_zz"], slow["long_range_zz"], atol=1e-9)
         np.testing.assert_allclose(fast["mean_x"], slow["mean_x"], atol=1e-9)
         np.testing.assert_allclose(fast["entropy"], slow["entropy"], atol=1e-9)
+
+
+class TestConnectedCorrelator:
+    """Connected ⟨Z_i Z_j⟩_c = ⟨Z_i Z_j⟩ − ⟨Z_i⟩⟨Z_j⟩."""
+
+    def test_equals_raw_when_z2_symmetric(self):
+        # Z2-symmetric ground state (TFIM): <Z_i>=0, so connected == raw
+        from qsae.datasets import tfim_ground_states
+        from qsae.observables import (long_range_zz_connected_fast,
+                                       long_range_zz_fast)
+        n = 6
+        for h in (0.3, 1.0, 1.8):
+            psi = tfim_ground_states(n=n, h_values=np.array([h]))[0]
+            assert long_range_zz_connected_fast(psi, n) == pytest.approx(
+                long_range_zz_fast(psi, n), abs=1e-9)
+
+    def test_ghz_connected_is_one(self):
+        from qsae.observables import long_range_zz_connected_fast
+        n = 5
+        # GHZ: <Z_0>=<Z_{n-1}>=0, <Z_0 Z_{n-1}>=1 -> connected = 1
+        assert long_range_zz_connected_fast(_ghz(n), n) == pytest.approx(1.0, abs=1e-12)
+
+    def test_polarised_product_connected_is_zero(self):
+        from qsae.observables import long_range_zz_connected_fast
+        n = 5
+        # |0...0>: <Z_i>=1, <Z_0 Z_{n-1}>=1 -> connected = 1 - 1*1 = 0
+        assert long_range_zz_connected_fast(_all_zeros(n), n) == pytest.approx(0.0, abs=1e-12)
+
+    def test_batch_key_present(self):
+        rng = np.random.default_rng(0)
+        n, N = 4, 6
+        psi = rng.standard_normal((N, 1 << n)) + 1j * rng.standard_normal((N, 1 << n))
+        psi /= np.linalg.norm(psi, axis=1, keepdims=True)
+        obs = compute_all_observables_fast(psi, n)
+        assert "long_range_zz_connected" in obs
+        assert obs["long_range_zz_connected"].shape == (N,)

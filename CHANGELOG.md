@@ -7,6 +7,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (P0 — sharpen the core)
+- `long_range_zz_connected` observable (⟨Z₀Z_{L-1}⟩ − ⟨Z₀⟩⟨Z_{L-1}⟩) + fast helpers
+  and tests — subtracts the factorised, input-trivial part to isolate genuinely
+  non-local order. Used to revisit the §3d caveat.
+- `exp_ra11_bootstrap.py` — effect sizes with 95% bootstrap CIs for the headline
+  (representation-level out-of-fold probe): ⟨Z₀Z_{L-1}⟩ probe R² 0.962 [0.951,0.970],
+  partial-r given mean-h **0.934 [0.920,0.948]** (stronger and cleaner than the
+  single-feature 0.71). Replaces p-value theatre. week3_results.md updated.
+
 ### Added (Steps 2–3 — scaling & non-integrable)
 - **L-scaling (`runs/ra08_scaling`, `exp_ra08_scaling.py`).** Retrained the
   transformer at L = 8, 10, 12 (energy R² = 0.9998) and re-ran the ⟨Z₀Z_{L-1}⟩
