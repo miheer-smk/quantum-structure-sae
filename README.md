@@ -350,10 +350,12 @@ energy = model(torch.rand(16, 8))       # (batch,) ground-state energies
 | TopK SAE on residual stream | ✅ | `exp_ra02_observables.py` — 208 alive features, \|r\| ≤ 0.91 |
 | Feature–observable correlation | ✅ | Pearson heatmap + top-feature JSON |
 | **Control battery (C1–C5)** | ✅ | `exp_ra03_controls.py` — trained-vs-untrained, permutation null, partial-r, depth sweep, universality |
-| Scaling: L = 12, disordered J_{ij} | ⬜ | Next: strengthen the non-poly regime |
-| Auto-interp of live features | ⬜ | Claude-API concept descriptions + held-out scoring |
-| Workshop paper draft | ⬜ | Target: ICLR 2026 workshop |
-| Full paper | ⬜ | Target: NeurIPS 2026 |
+| Causal activation patching | ✅ | `exp_ra07_causal.py` — order is decodable but not load-bearing |
+| Scaling to L = 12 | ✅ | `exp_ra08_scaling.py` — learned gain robust (≈ +0.028), not a finite-size artifact |
+| Non-integrable Hamiltonian | ✅ | mixed-field (`--g`) — honest negative: effect needs a beyond-input observable |
+| Workshop paper draft | ◑ | `paper/workshop_abstract.md` — draft; port to a venue template |
+| Disordered J_{ij} / connected correlator | ⬜ | the clean non-integrable test still outstanding |
+| Full paper | ⬜ | Target: a physics-ML venue (see `EXECUTION_PLAN.md`) |
 
 ---
 

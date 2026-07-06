@@ -219,6 +219,72 @@ follow-up: *why* does the representation encode order it does not use?
 
 ---
 
+## 3c. Scaling with system size (`runs/ra08_scaling/`)
+
+Is the L = 8 effect a finite-size artifact? Using the memory-safe sparse
+ground-state solver (`compute_ground_states_sparse`), we retrain the transformer at
+L = 8, 10, 12 (15k states each, energy val R² = 0.9998 throughout) and re-run the
+⟨Z₀Z_{L-1}⟩ probe comparison (`exp_ra08_scaling.py`):
+
+| L | trained | untrained | raw h | mean h | **learned gain** |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 8 | 0.950 | 0.920 | 0.753 | 0.667 | **+0.029** |
+| 10 | 0.927 | 0.899 | 0.736 | 0.636 | **+0.028** |
+| 12 | 0.894 | 0.867 | 0.719 | 0.600 | **+0.027** |
+
+<sub>Learned gain = R²(trained) − max(R² untrained, raw-h, mean-h).</sub>
+
+**The learned advantage is robust across L (stable ≈ +0.028), i.e. not a
+finite-size artifact of L = 8** — but it does **not amplify** with size, contrary to
+the optimistic prediction in `week1_results.md`. The mean-field baselines *do*
+weaken as L grows (mean-h 0.667 → 0.600), as predicted, but absolute decodability
+also drops for every representation (a fixed d_model = 64 must encode order across a
+longer chain), so the *gap* stays constant rather than widening. Honest reading:
+system-size robustness, not amplification. Amplification may require scaling the
+model width with L, or the disordered-coupling regime — left for future work.
+
+<div align="center">
+<img src="../figures/ra08_scaling.png" width="720" alt="Order-parameter decodability and learned gain vs system size"/>
+</div>
+
+---
+
+## 3d. A non-integrable model — where the effect *disappears*, and why (`runs/ra09_mixedfield/`)
+
+The 1D TFIM is exactly solvable (Jordan–Wigner → free fermions), so a natural worry
+is that the effect is special to integrable systems. We break integrability by
+adding a **fixed longitudinal field** g = 0.5 (the non-integrable *mixed-field Ising
+model*), which leaves the transformer's input unchanged (still **h**; g is a model
+constant), and re-run the analysis via the same pipeline (`exp_ra08_scaling.py --g 0.5`):
+
+| L | trained | untrained | raw h | mean h | learned gain |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 8 | 0.962 | 0.979 | 0.969 | 0.340 | **−0.018** |
+| 10 | 0.962 | 0.964 | 0.969 | 0.276 | **−0.007** |
+
+**The learned advantage vanishes — but the reason is illuminating, not damning.**
+Breaking the Z₂ symmetry with a longitudinal field *polarises* the ground state
+(⟨Z_i⟩ ≈ 0.97), so ⟨Z₀Z_{L-1}⟩ ≈ ⟨Z₀⟩⟨Z_{L-1}⟩ becomes an almost-**linear function
+of the input h** (raw-h probe R² jumps 0.75 → 0.97, while mean-h collapses 0.67 →
+0.34). Once the order parameter is trivially decodable from the raw input, there is
+no beyond-input structure left for the network to add, and trained ≈ untrained ≈
+raw-h. 
+
+This clarifies *when* the effect appears: it requires an observable that carries
+genuinely **beyond-input, non-local** structure — which in the integrable TFIM is
+guaranteed by the unbroken Z₂ symmetry (⟨Z_i⟩ = 0, so the correlator is *not* linear
+in h). **Caveat (reported honestly):** this test therefore conflates "non-integrable"
+with "symmetry-broken / input-trivial observable," so it does *not* cleanly isolate
+integrability per se. A sharper test — a non-integrable model in which ⟨Z₀Z_{L-1}⟩
+remains beyond-input decodable (e.g. a disordered longitudinal field fed to the
+model, or the *connected* correlator) — is the right follow-up.
+
+<div align="center">
+<img src="../figures/ra09_mixedfield.png" width="720" alt="Mixed-field (non-integrable) probe comparison: learned advantage vanishes"/>
+</div>
+
+---
+
 ## 4. What can and cannot be claimed
 
 **Defensible.**
@@ -233,6 +299,8 @@ follow-up: *why* does the representation encode order it does not use?
 4. The order-parameter representation is **disentangled from the energy-prediction
    pathway**: it lives in a low-variance, approximately task-orthogonal subspace
    (causal patching, §3b) — encoded, but not load-bearing for the trained objective.
+5. The learned advantage is **robust across system size** (L = 8, 10, 12; §3c),
+   confirming it is not a finite-size artifact.
 
 **Not (yet) supported.**
 - That the model *uses* the order-parameter direction for its energy prediction —
@@ -240,18 +308,21 @@ follow-up: *why* does the representation encode order it does not use?
   not mechanism-for-the-task.
 - That *individual, monosemantic SAE features* correspond one-to-one to named
   observables — the SAE basis is seed-dependent (C5).
+- That the learned advantage is *universal* across Hamiltonians — it requires the
+  observable to carry beyond-input structure; in the symmetry-broken mixed-field
+  model where ⟨Z₀Z_{L-1}⟩ is input-trivial, the advantage disappears (§3d).
 - Any "quantum advantage" claim — out of scope by design (see RUNBOOK).
 
 **Threats to validity / next steps.**
-- **Integrability.** The 1D TFIM is *exactly solvable* — a Jordan–Wigner
-  transformation maps it to free fermions — so its ground-state observables are
-  comparatively low-complexity functions of **h**. "The transformer had to learn
-  genuine structure" is therefore a weaker claim here than it would be for a
-  non-integrable/chaotic system; the beyond-mean-field result should be
-  reproduced on a non-integrable Hamiltonian (e.g. TFIM + longitudinal field, the
-  ANNNI model, or a Heisenberg chain) before it is over-generalised.
-- L = 8 only. The order-parameter signal should be re-checked at L = 12 (the
-  mean-field baselines are expected to weaken as L grows — see `week1_results.md`).
+- **Integrability — partially tested (§3d).** Adding a fixed longitudinal field
+  (non-integrable mixed-field Ising model) makes the learned advantage vanish,
+  *because* the symmetry breaking renders ⟨Z₀Z_{L-1}⟩ trivially input-decodable —
+  not (necessarily) because of non-integrability itself. The clean test still
+  outstanding is a non-integrable model in which the order parameter stays
+  beyond-input decodable (disordered longitudinal field fed to the model, or the
+  connected correlator).
+- ~~L = 8 only.~~ **Addressed (§3c):** re-checked at L = 10 and 12 — the learned
+  advantage is stable (≈ +0.028), robust but not amplifying at fixed model width.
 - Disordered couplings J_{ij} would break the near-diagonal structure the polynomial
   baseline exploits and is the recommended way to make the task genuinely non-poly.
 - SAE universality should be revisited with more data and width; current negative

@@ -7,6 +7,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (Steps 2–3 — scaling & non-integrable)
+- **L-scaling (`runs/ra08_scaling`, `exp_ra08_scaling.py`).** Retrained the
+  transformer at L = 8, 10, 12 (energy R² = 0.9998) and re-ran the ⟨Z₀Z_{L-1}⟩
+  probe comparison. The learned gain over the best baseline is *robust* (≈ +0.028
+  at every L) — not a finite-size artifact — but does not amplify at fixed model
+  width. Written up in `week3_results.md` §3c.
+- **Non-integrable mixed-field test (`runs/ra09_mixedfield`, `--g 0.5`).** Honest
+  negative: breaking the Z₂ symmetry polarises the ground state so ⟨Z₀Z_{L-1}⟩
+  becomes trivially input-decodable (raw-h R² 0.75 → 0.97), and the learned
+  advantage disappears (gain ≈ 0 at L = 8, 10). Clarifies that the effect requires
+  an observable with beyond-input structure; caveat that the test conflates
+  non-integrability with an input-trivial observable. Written up in §3d.
+- `docs/week3_results.md` §3c/§3d, workshop abstract, and figures updated; claims
+  and limitations sections revised to match (robust across L; not universal across
+  Hamiltonians).
+
 ### Added (Stage 3 infra — scaling)
 - `compute_ground_states_sparse` + sparse Pauli builders in
   `reverse_arrow/data.py` — memory-safe Lanczos ground-state solver supporting

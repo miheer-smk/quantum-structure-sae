@@ -121,6 +121,13 @@ negative for the naive "the model uses order to predict energy" hypothesis, and 
 more interesting positive — the network organises a disentangled order
 representation it does not need for its task.
 
+**Robustness to system size.** Retraining at L = 8, 10, 12 (energy R² = 0.9998
+throughout) shows the learned gain on ⟨Z₀Z_{L−1}⟩ — R²(trained) minus the best of
+{untrained, raw h, mean h} — is stable at ≈ +0.028 across sizes. The effect is not a
+finite-size artifact of L = 8; the mean-field baselines weaken with L as expected,
+but absolute decodability weakens in step (a fixed d_model must encode order across a
+longer chain), so the advantage is preserved rather than amplified.
+
 ## 5. What can and cannot be claimed
 
 **Supported.** (1) The trained representation linearly encodes the non-local order
@@ -138,13 +145,18 @@ representation level, not the feature level, and report this negative result in 
 
 ## 6. Limitations and next steps
 
-**Integrability.** The 1D TFIM is exactly solvable (Jordan–Wigner → free fermions),
-so its observables are comparatively low-complexity functions of **h**; the
-beyond-mean-field result should be reproduced on a non-integrable Hamiltonian (TFIM
-+ longitudinal field, ANNNI, Heisenberg) before over-generalising. **Scale.** L = 8
-here; the mean-field baselines are expected to weaken as L grows, so the order-
-parameter effect should be re-checked at L = 12–14 (exact-diagonalisation ceiling)
-and, for genuinely non-polynomial tasks, with disordered couplings J_{ij}.
+**Integrability — tested, with a caveat.** Adding a fixed longitudinal field
+(non-integrable mixed-field Ising model) makes the learned advantage vanish, but for
+an instructive reason: symmetry breaking polarises the ground state so ⟨Z₀Z_{L−1}⟩
+becomes almost linear in **h** (raw-h probe R² 0.75 → 0.97), leaving no beyond-input
+structure to learn. This clarifies *when* the effect appears — it needs an observable
+with genuine beyond-input, non-local content — but it conflates non-integrability
+with an input-trivial observable, so a cleaner test (disordered longitudinal field
+fed to the model, or the connected correlator) is still needed.
+**Scale — addressed.** Re-running the analysis at L = 8, 10, 12 (memory-safe sparse
+solver) shows the learned gain is *robust* (stable ≈ +0.028) rather than a
+finite-size artifact; it does not amplify at fixed model width, which may require
+scaling d_model with L, or the disordered-coupling regime J_{ij}.
 **Causality — addressed, with a twist.** Activation patching (above) shows the model
 does *not* use the order direction for energy prediction; it is decodable but not
 load-bearing. This reframes the open question from "does the model use it?" to "why

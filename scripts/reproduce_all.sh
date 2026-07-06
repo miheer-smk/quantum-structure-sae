@@ -52,6 +52,13 @@ $PY scripts/exp_ra06_multiseed.py --ckpt "$CKPT" --seeds 42,43,44 \
 echo "[3d] causal activation patching (decodable vs used)"
 $PY scripts/exp_ra07_causal.py --ckpt "$CKPT" --n_samples "$N_CTRL"
 
+if [[ "${FAST:-0}" == "1" ]]; then SC_NTR=2000; SC_EP=40; else SC_NTR=15000; SC_EP=100; fi
+echo "[3e] L-scaling (L=8,10,12) — trains a transformer per L (slow)"
+$PY scripts/exp_ra08_scaling.py --Ls 8,10,12 --n_train "$SC_NTR" --epochs "$SC_EP"
+echo "[3f] non-integrable mixed-field (g=0.5)"
+$PY scripts/exp_ra08_scaling.py --Ls 8,10 --g 0.5 --n_train "$SC_NTR" --epochs "$SC_EP" \
+    --run_dir runs/ra09_mixedfield
+
 echo "[4/5] classical-data validation (Bars-and-Stripes QNN -> shadow -> SAE)"
 if [[ "${SKIP_BAS:-0}" == "1" ]]; then
   echo "    SKIP_BAS=1 — skipping"
