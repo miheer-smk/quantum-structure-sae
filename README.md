@@ -352,9 +352,10 @@ energy = model(torch.rand(16, 8))       # (batch,) ground-state energies
 | **Control battery (C1–C5)** | ✅ | `exp_ra03_controls.py` — trained-vs-untrained, permutation null, partial-r, depth sweep, universality |
 | Causal activation patching | ✅ | `exp_ra07_causal.py` — order is decodable but not load-bearing |
 | Scaling to L = 12 | ✅ | `exp_ra08_scaling.py` — learned gain robust (≈ +0.028), not a finite-size artifact |
-| Non-integrable Hamiltonian | ✅ | mixed-field (`--g`) — honest negative: effect needs a beyond-input observable |
-| Workshop paper draft | ◑ | `paper/workshop_abstract.md` — draft; port to a venue template |
-| Disordered J_{ij} / connected correlator | ⬜ | the clean non-integrable test still outstanding |
+| Non-integrable Hamiltonian | ✅ | mixed-field (`--g`) — effect **persists** on the connected correlator (`exp_ra10`) |
+| Effect sizes + bootstrap CIs | ✅ | `exp_ra11_bootstrap.py` — partial-r 0.934 [0.920, 0.948] |
+| Verified related work | ✅ | `paper/workshop_abstract.md` §7 |
+| Workshop paper draft | ◑ | draft complete; port to a venue LaTeX template |
 | Full paper | ⬜ | Target: a physics-ML venue (see `EXECUTION_PLAN.md`) |
 
 ---

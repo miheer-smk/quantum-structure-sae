@@ -8,9 +8,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added (P0 — sharpen the core)
+- **Integrability caveat resolved** (`exp_ra10_connected.py`, `runs/ra10_connected`).
+  On the *connected* correlator the learned encoding of non-local order persists in
+  the non-integrable mixed-field model (g=0.5): connected is not input-decodable
+  (raw-h R² 0.26–0.37) yet the trained transformer recovers it (0.81 at L=8, 0.59 at
+  L=10), positive learned gain over every baseline. The §3d "vanishing effect" was an
+  input-triviality artifact of the raw correlator, not non-integrability. This
+  obviates the disordered-g modeling change (former P1#4). week3_results.md §3d.
 - `long_range_zz_connected` observable (⟨Z₀Z_{L-1}⟩ − ⟨Z₀⟩⟨Z_{L-1}⟩) + fast helpers
   and tests — subtracts the factorised, input-trivial part to isolate genuinely
-  non-local order. Used to revisit the §3d caveat.
+  non-local order.
 - `exp_ra11_bootstrap.py` — effect sizes with 95% bootstrap CIs for the headline
   (representation-level out-of-fold probe): ⟨Z₀Z_{L-1}⟩ probe R² 0.962 [0.951,0.970],
   partial-r given mean-h **0.934 [0.920,0.948]** (stronger and cleaner than the

@@ -148,14 +148,17 @@ representation level, not the feature level, and report this negative result in 
 
 ## 6. Limitations and next steps
 
-**Integrability — tested, with a caveat.** Adding a fixed longitudinal field
-(non-integrable mixed-field Ising model) makes the learned advantage vanish, but for
-an instructive reason: symmetry breaking polarises the ground state so ⟨Z₀Z_{L−1}⟩
-becomes almost linear in **h** (raw-h probe R² 0.75 → 0.97), leaving no beyond-input
-structure to learn. This clarifies *when* the effect appears — it needs an observable
-with genuine beyond-input, non-local content — but it conflates non-integrability
-with an input-trivial observable, so a cleaner test (disordered longitudinal field
-fed to the model, or the connected correlator) is still needed.
+**Integrability — tested and resolved.** Adding a fixed longitudinal field
+(non-integrable mixed-field Ising model) at first makes the learned advantage vanish
+— but only because symmetry breaking polarises the ground state so the *raw*
+⟨Z₀Z_{L−1}⟩ becomes almost linear in **h** (raw-h probe R² 0.75 → 0.97), leaving no
+beyond-input structure to learn. Measuring instead the *connected* correlator
+⟨Z₀Z_{L−1}⟩_c = ⟨Z₀Z_{L−1}⟩ − ⟨Z₀⟩⟨Z_{L−1}⟩ — which subtracts exactly that
+input-trivial part — the effect **returns in the non-integrable model**: the
+connected correlator is not input-decodable (raw-h R² 0.26–0.37) yet the trained
+transformer recovers it (0.81 at L=8, 0.59 at L=10), a positive learned gain over
+every baseline. So the learned encoding of non-local order is not an artifact of
+integrability; it requires only that the target carry genuine beyond-input content.
 **Scale — addressed.** Re-running the analysis at L = 8, 10, 12 (memory-safe sparse
 solver) shows the learned gain is *robust* (stable ≈ +0.028) rather than a
 finite-size artifact; it does not amplify at fixed model width, which may require

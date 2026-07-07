@@ -58,6 +58,10 @@ $PY scripts/exp_ra08_scaling.py --Ls 8,10,12 --n_train "$SC_NTR" --epochs "$SC_E
 echo "[3f] non-integrable mixed-field (g=0.5)"
 $PY scripts/exp_ra08_scaling.py --Ls 8,10 --g 0.5 --n_train "$SC_NTR" --epochs "$SC_EP" \
     --run_dir runs/ra09_mixedfield
+echo "[3g] connected correlator (resolves the integrability caveat)"
+$PY scripts/exp_ra10_connected.py --Ls 8,10 --gs 0.0,0.5 --n_train "$SC_NTR" --epochs "$SC_EP"
+echo "[3h] bootstrap CIs on the headline"
+$PY scripts/exp_ra11_bootstrap.py --ckpt "$CKPT"
 
 echo "[4/5] classical-data validation (Bars-and-Stripes QNN -> shadow -> SAE)"
 if [[ "${SKIP_BAS:-0}" == "1" ]]; then

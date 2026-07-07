@@ -299,6 +299,40 @@ model, or the *connected* correlator) — is the right follow-up.
 <img src="../figures/ra09_mixedfield.png" width="720" alt="Mixed-field (non-integrable) probe comparison: learned advantage vanishes"/>
 </div>
 
+### Resolution — the *connected* correlator (`runs/ra10_connected/`)
+
+The caveat above predicts its own fix: use the **connected** correlator
+⟨Z₀Z_{L-1}⟩_c = ⟨Z₀Z_{L-1}⟩ − ⟨Z₀⟩⟨Z_{L-1}⟩, which subtracts exactly the
+factorised, input-trivial part that symmetry breaking introduced. We re-ran the
+probe comparison for both the raw and connected correlator, in the integrable
+(g = 0) and non-integrable (g = 0.5) models (`exp_ra10_connected.py`):
+
+| g | L | observable | trained | untrained | raw h | mean h | learned gain |
+|:-:|:-:|:--|:-:|:-:|:-:|:-:|:-:|
+| 0.0 | 8 | raw = connected | 0.926 | 0.920 | 0.753 | 0.667 | +0.006 |
+| 0.5 | 8 | raw | 0.969 | 0.979 | 0.969 | 0.340 | −0.010 |
+| 0.5 | 8 | **connected** | **0.811** | 0.686 | 0.257 | 0.255 | **+0.125** |
+| 0.5 | 10 | raw | 0.955 | 0.964 | 0.969 | 0.276 | −0.014 |
+| 0.5 | 10 | **connected** | **0.586** | 0.565 | 0.369 | 0.366 | **+0.021** |
+
+**The effect survives non-integrability once measured on the genuinely non-local
+quantity.** At g = 0.5 the *connected* correlator is *not* input-decodable (raw-h R²
+0.26–0.37, a plunge from the raw correlator's 0.97), yet the **trained** transformer
+recovers it well (0.81 at L = 8, 0.59 at L = 10) — a positive learned gain over every
+baseline (+0.125 / +0.021 over the untrained net; +0.55 / +0.22 over raw h). In the
+integrable model ⟨Z₀⟩ = 0 so connected ≡ raw, a built-in consistency check.
+
+**Conclusion.** The vanishing advantage of §3d was an artifact of the *raw*
+correlator becoming input-trivial under explicit symmetry breaking, not of
+non-integrability. On the connected correlator — the physically meaningful,
+beyond-input quantity — the learned encoding of non-local order **persists in the
+non-integrable model**. (The gain over the untrained net shrinks with L at fixed
+width, mirroring §3c.)
+
+<div align="center">
+<img src="../figures/ra10_connected.png" width="640" alt="Raw vs connected correlator learned gain across integrable and non-integrable models"/>
+</div>
+
 ---
 
 ## 4. What can and cannot be claimed
@@ -324,19 +358,20 @@ model, or the *connected* correlator) — is the right follow-up.
   not mechanism-for-the-task.
 - That *individual, monosemantic SAE features* correspond one-to-one to named
   observables — the SAE basis is seed-dependent (C5).
-- That the learned advantage is *universal* across Hamiltonians — it requires the
-  observable to carry beyond-input structure; in the symmetry-broken mixed-field
-  model where ⟨Z₀Z_{L-1}⟩ is input-trivial, the advantage disappears (§3d).
+- That the learned advantage appears for *input-trivial* observables — it requires
+  the observable to carry genuine beyond-input structure. On the raw correlator in
+  the symmetry-broken model (input-trivial) it disappears; on the connected
+  correlator (beyond-input) it persists (§3d + Resolution).
 - Any "quantum advantage" claim — out of scope by design (see RUNBOOK).
 
 **Threats to validity / next steps.**
-- **Integrability — partially tested (§3d).** Adding a fixed longitudinal field
-  (non-integrable mixed-field Ising model) makes the learned advantage vanish,
-  *because* the symmetry breaking renders ⟨Z₀Z_{L-1}⟩ trivially input-decodable —
-  not (necessarily) because of non-integrability itself. The clean test still
-  outstanding is a non-integrable model in which the order parameter stays
-  beyond-input decodable (disordered longitudinal field fed to the model, or the
-  connected correlator).
+- **Integrability — tested and resolved (§3d + Resolution).** The learned encoding
+  of non-local order *persists* in the non-integrable mixed-field model when measured
+  on the connected correlator ⟨Z₀Z_{L-1}⟩_c (trained probe R² 0.81 at L=8 vs raw-h
+  0.26). The apparent failure on the raw correlator was an input-triviality artifact
+  of explicit symmetry breaking, not non-integrability. Remaining: chaos diagnostics
+  (level-spacing) to characterise *how* non-integrable, and a broader Hamiltonian
+  sweep (ANNNI/Heisenberg).
 - ~~L = 8 only.~~ **Addressed (§3c):** re-checked at L = 10 and 12 — the learned
   advantage is stable (≈ +0.028), robust but not amplifying at fixed model width.
 - Disordered couplings J_{ij} would break the near-diagonal structure the polynomial
