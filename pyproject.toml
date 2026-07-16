@@ -58,6 +58,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "slow: long-running test (excluded by `make test-fast`; run in full CI)",
+]
 
 [tool.ruff]
 line-length = 100

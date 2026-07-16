@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 
 from qsae.sae import SAEConfig, TopKSAE
@@ -19,6 +20,7 @@ def test_topk_sparsity_exact() -> None:
     assert (nnz <= cfg.k).all(), f"expected L0 <= {cfg.k}, got max {nnz.max().item()}"
 
 
+@pytest.mark.slow
 def test_sae_reconstructs_simple_data() -> None:
     """
     On a synthetic "sparse superposition" dataset where inputs are sums of

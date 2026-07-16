@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 
 from qsae.reverse_arrow import TFIMTransformer, TransformerConfig
@@ -25,6 +26,7 @@ def test_forward_pass_shape() -> None:
 # ---------------------------------------------------------------------------
 # 2. Overfit on 4 examples
 # ---------------------------------------------------------------------------
+@pytest.mark.slow
 def test_overfit_4_examples() -> None:
     """
     A model with enough capacity should memorise 4 fixed (h, E) pairs

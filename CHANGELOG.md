@@ -7,6 +7,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (Phase 0 — reproducibility harness, new roadmap)
+- `docs/CODE_MAP.md` — full audit of every module/script/test, the shared
+  analysis pattern the scripts duplicate, infrastructure gaps, and the eight
+  established results the new phases must not regress.
+- Reproducibility harness: `qsae.config` (YAML configs under `configs/` with
+  dotted-key overrides; `seed` mandatory), `qsae.repro` (global seeding of
+  Python/NumPy/torch + determinism flags, returns an auditable record),
+  `qsae.runlog` (`RunLogger`: per-run `config_resolved.yaml`, `meta.json` with
+  git commit hash, `metrics.jsonl`, `results.json`, and a global
+  `runs/manifest.jsonl`; optional W&B mirroring, local files always written).
+  10 fast unit tests in `tests/test_harness.py`.
+- `configs/smoke.yaml` + `experiments/smoke.py` — tiny end-to-end pass
+  (config → seed → sparse ED → transformer → SAE → logs) as the harness
+  acceptance gate; `Makefile` with `test` / `test-fast` / `lint` / `smoke` /
+  `check`. The two ~2–7 min training tests are now `@pytest.mark.slow`
+  (full suite unchanged; `make test-fast` runs 57 tests in ~40 s).
+
 ### Added (P0 — sharpen the core)
 - **Integrability caveat resolved** (`exp_ra10_connected.py`, `runs/ra10_connected`).
   On the *connected* correlator the learned encoding of non-local order persists in
