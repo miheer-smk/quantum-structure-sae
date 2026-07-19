@@ -1,0 +1,49 @@
+# Phase 0.5 — full-input recoverability control (the "kill-shot").
+#
+# The TMLR draft controls the headline partial correlation only against the
+# SCALAR mean field h-bar. This experiment generalises the control to the FULL
+# site-resolved input h and its degree-2 polynomial expansion, answering the
+# question a reviewer will ask (draft Limitation #3): does the trained residual
+# stream carry information about each observable BEYOND everything linearly /
+# quadratically computable from the raw Hamiltonian input?
+#
+# Runs entirely on existing artifacts (no training, no ED): the trained
+# checkpoint runs/ra01_wide/best.pt and the cached L=8, N=800 ground-state /
+# observable files data/ra03_states_L8_N800_s{42,43,44}.pt.
+seed: 42
+
+ckpt: runs/ra01_wide/best.pt
+
+data:
+  # cached (h_fields, states, obs, h_mean) files, one per seed
+  cache_glob: "data/ra03_states_L8_N800_s{seed}.pt"
+  seeds: [42, 43, 44]
+
+observables:
+  - entropy
+  - mean_nn_zz
+  - mean_x
+  - long_range_zz
+  - long_range_zz_connected
+  - phase_proximity
+
+# control sets to partial out (increasingly strong input models)
+controls:
+  - mean_h      # reproduces the draft's scalar control
+  - raw_h       # full site-resolved input vector (L dims)
+  - poly2_h     # degree-2 polynomial features of the input
+
+probe:
+  ridge_alpha: 1.0
+  n_folds: 5
+
+# random-init control: recompute the (point) partial correlation for this many
+# independently initialised untrained transformers, so the trained-vs-untrained
+# separation is reported against a DISTRIBUTION of inits, not a single draw.
+n_random_init: 12
+
+bootstrap:
+  n_boot: 4000
+
+logging:
+  wandb: false

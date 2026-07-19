@@ -7,6 +7,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (Phase 0.5 — full-input recoverability control, "kill-shot")
+- `qsae.analysis.input_control` — the confound analysis that generalises the
+  draft's SCALAR mean-field control to the full site-resolved input and its
+  degree-2 polynomial: out-of-fold ridge probes, OLS residualisation (Frisch–
+  Waugh), vector-control partial correlation, incremental R² beyond a control,
+  and percentile-bootstrap CIs. 10 analytic-case unit tests
+  (`tests/test_input_control.py`), incl. a poly-2 confound that a linear control
+  cannot remove.
+- `qsae.analysis.fdr` — Benjamini–Hochberg FDR q-values (1-D and feature×
+  observable grid), verified against a first-principles/statsmodels reference
+  (`tests/test_fdr.py`, 8 tests). Addresses the draft's missing multiple-
+  comparison correction (it reports only a max-permutation null today).
+- `experiments/phase05_input_control.py` + `configs/phase05_input_control.yaml`
+  — runs the kill-shot on the existing checkpoint (no training/ED) with a
+  **random-init distribution** baseline (12 inits × 3 seeds), bootstrap CIs, and
+  a pre-stated decision rule. `docs/phase05_input_control.md`.
+- **Result (honest, positive):** the non-local order headline **survives** the
+  full degree-2 input control — trained partial-r **0.648 [0.576, 0.710]** vs a
+  random-init distribution of **0.301 ± 0.115** (p95 0.478, max 0.495 over 36
+  draws); incremental R² beyond poly-2 = 0.032 [0.025, 0.039]. The effect is
+  real but **smaller than the scalar-control number (0.71) implied**; the single
+  untrained draw (0.107) was a low-tail outlier. Entropy does *not* clearly beat
+  random-init under this control; phase proximity is exactly trivial. Directly
+  resolves draft Limitation #3 and validates the probe-primary framing.
+
 ### Added (Phase 0 — reproducibility harness, new roadmap)
 - `docs/CODE_MAP.md` — full audit of every module/script/test, the shared
   analysis pattern the scripts duplicate, infrastructure gaps, and the eight
