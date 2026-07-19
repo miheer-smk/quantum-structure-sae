@@ -31,8 +31,8 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.preprocessing import PolynomialFeatures
 
+from qsae.analysis.extract import build_input_controls, last_layer_pooled, r2_score
 from qsae.analysis.input_control import (
     bootstrap_partial_corr,
     oof_ridge_predict,
@@ -43,27 +43,8 @@ from qsae.repro import set_global_seed
 from qsae.reverse_arrow.transformer import TFIMTransformer
 from qsae.runlog import RunLogger
 
-
-def last_layer_pooled(model: TFIMTransformer, h_fields: np.ndarray, batch: int = 256) -> np.ndarray:
-    """Mean-pooled last-layer residual stream, (N, d_model)."""
-    model.eval()
-    h = torch.from_numpy(h_fields).float()
-    chunks = []
-    for start in range(0, len(h), batch):
-        acts: list[torch.Tensor] = []
-        handle = model.encoder.layers[-1].register_forward_hook(
-            lambda m, i, o: acts.append(o.detach()))
-        with torch.no_grad():
-            model(h[start:start + batch])
-        handle.remove()
-        chunks.append(acts[0].mean(dim=1))
-    return torch.cat(chunks, 0).numpy()
-
-
-def _r2(y, pred):
-    ss_res = float(np.sum((y - pred) ** 2))
-    ss_tot = float(np.sum((y - y.mean()) ** 2)) + 1e-12
-    return 1.0 - ss_res / ss_tot
+_r2 = r2_score
+build_controls = build_input_controls
 
 
 def bootstrap_incremental_r2(repr_feats, Z, y, alpha, n_folds, n_boot, seed):
@@ -85,14 +66,6 @@ def bootstrap_incremental_r2(repr_feats, Z, y, alpha, n_folds, n_boot, seed):
     return {"estimate": point,
             "ci_lo": float(np.quantile(boots, 0.025)),
             "ci_hi": float(np.quantile(boots, 0.975))}
-
-
-def build_controls(h_fields: np.ndarray) -> dict[str, np.ndarray | None]:
-    return {
-        "mean_h": h_fields.mean(axis=1, keepdims=True),
-        "raw_h": h_fields,
-        "poly2_h": PolynomialFeatures(degree=2, include_bias=False).fit_transform(h_fields),
-    }
 
 
 def main() -> None:

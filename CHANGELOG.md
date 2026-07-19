@@ -7,6 +7,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added (Phase 0.6 — trained-seed distribution; results archive)
+- `experiments/phase06_multiseed_trained.py` + `configs/phase06_multiseed_trained.yaml`
+  — retrains the transformer from N independent seeds (fresh init + disorder,
+  delegating to the canonical `exp_ra01_train_transformer.py`) and runs the
+  IDENTICAL full-input control on each, reporting the headline as a **trained
+  distribution vs random-init distribution**. Adds: separation in random-sd units
+  ((mean_tr−mean_rand)/sd_rand); **per-seed transparency** (flags any trained seed
+  at/near the random threshold — nothing averaged away); and an **automatic
+  p95-stability check** (launch pool n=16 with bootstrap CI vs a larger n=64 pool;
+  auto-bumps the threshold to the full pool if the 16-sample p95 is jumpy).
+- `qsae.analysis.extract` — `last_layer_pooled`, `r2_score`, `build_input_controls`
+  lifted out of the experiment scripts (removes the duplication flagged in
+  CODE_MAP §2); phase05 refactored to use them.
+- `results/` — committed, curated archive of every experiment's headline tables
+  (the exact numbers reported in-session), with an index. **Standing convention:**
+  drivers write their result table here automatically after every run.
+  Backfilled with Phase 0.5.
+
 ### Added (Phase 0.5 — full-input recoverability control, "kill-shot")
 - `qsae.analysis.input_control` — the confound analysis that generalises the
   draft's SCALAR mean-field control to the full site-resolved input and its

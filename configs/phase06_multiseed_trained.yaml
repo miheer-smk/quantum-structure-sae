@@ -1,0 +1,62 @@
+# Phase 0.6 — trained-model SEED DISTRIBUTION of the full-input control.
+#
+# Phase 0.5 compared ONE trained model to 36 random inits. This retrains the
+# transformer from independent seeds (fresh weight init + fresh 50k disorder
+# draws) and re-runs the IDENTICAL full-input recoverability control on each, so
+# the headline becomes trained-distribution vs random-distribution.
+#
+# Invariants held fixed across trained seeds (only the trained weights vary):
+#   * evaluation states  — the cached N=800 seeds 42/43/44 (common yardstick)
+#   * CV fold seed        — probe.fold_seed
+#   * control construction, ridge alpha
+# Training disorder IS fresh per seed (independent draws).
+seed: 42                     # fold/analysis seed (fixed across trained seeds)
+
+train_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# training is delegated to scripts/exp_ra01_train_transformer.py (single source
+# of truth); these mirror its BASE_CFG / the draft so energy R^2 ~ 0.9999.
+train:
+  n_train: 50000
+  epochs: 200
+  # per-seed artifacts (the driver substitutes {s})
+  run_dir_tmpl: "runs/ms_trained/seed{s}"
+  cache_tmpl: "data/tfim_L8_N50k_seed{s}.pt"
+
+eval:
+  cache_glob: "data/ra03_states_L8_N800_s{seed}.pt"
+  seeds: [42, 43, 44]
+
+observables:
+  - entropy
+  - mean_nn_zz
+  - mean_x
+  - long_range_zz
+  - phase_proximity
+
+controls:
+  - mean_h
+  - raw_h
+  - poly2_h
+
+probe:
+  ridge_alpha: 1.0
+  n_folds: 5
+  fold_seed: 42
+
+# random-init distribution (computed once): fresh untrained nets for the
+# trained-vs-random distribution comparison.
+#   n_random_init  — the launch count used for the headline p95 threshold (16, per request)
+#   n_random_check — a larger pool to test whether p95(random) is stable at 16;
+#                    if the 16-vs-full p95 gap is large, the driver auto-bumps the
+#                    reported threshold to the full pool and flags it.
+n_random_init: 16
+n_random_check: 64
+p95_jumpy_tol: 0.02      # |p95_16 - p95_full| above this => "jumpy", auto-bump
+
+# a trained seed is flagged "near random" if its value is within this margin
+# (in random-sd units) above the random p95 — surfaces non-uniform seeds.
+near_p95_margin_sd: 0.5
+
+logging:
+  wandb: false
