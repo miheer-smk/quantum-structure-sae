@@ -53,25 +53,29 @@ def train_one(inp: np.ndarray, energies: np.ndarray, model_cfg: TransformerConfi
     """Train a transformer on (input -> energy); return (model, test R^2).
     Same optimiser/schedule as the TFIM training script, family-agnostic."""
     torch.manual_seed(seed)
-    x = torch.from_numpy(inp).float()
-    y = torch.from_numpy(energies).float()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    x = torch.from_numpy(inp).float().to(device)
+    y = torch.from_numpy(energies).float().to(device)
     n = len(x)
     n_test = max(1, min(n // 10, n - 2))
     n_val = max(1, min(n // 10, n - n_test - 1))
-    perm = torch.randperm(n, generator=torch.Generator().manual_seed(seed))
+    perm = torch.randperm(n, generator=torch.Generator().manual_seed(seed)).to(device)
     te, va, tr = perm[:n_test], perm[n_test:n_test + n_val], perm[n_test + n_val:]
     ym, ys = y[tr].mean(), y[tr].std()
 
-    model = TFIMTransformer(model_cfg)
+    model = TFIMTransformer(model_cfg).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=tr_cfg["lr"],
                             weight_decay=tr_cfg["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=tr_cfg["epochs"], eta_min=1e-6)
     bs = tr_cfg["batch_size"]
 
+    def r2(pred, target):
+        return r2_score(target.detach().cpu().numpy(), pred.detach().cpu().numpy())
+
     best_val, best_state, since = -1e9, None, 0
     for _ in range(tr_cfg["epochs"]):
         model.train()
-        idx = tr[torch.randperm(len(tr))]
+        idx = tr[torch.randperm(len(tr), device=device)]
         for s in range(0, len(idx), bs):
             b = idx[s:s + bs]
             opt.zero_grad()
@@ -82,19 +86,21 @@ def train_one(inp: np.ndarray, energies: np.ndarray, model_cfg: TransformerConfi
         sched.step()
         model.eval()
         with torch.no_grad():
-            vr = r2_score(((y[va] - ym) / ys).numpy(), model(x[va]).numpy())
+            vr = r2(model(x[va]), (y[va] - ym) / ys)
         if vr > best_val + 1e-4:
             best_val, since = vr, 0
-            best_state = {k: v.clone() for k, v in model.state_dict().items()}
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
         else:
             since += 1
             if since >= tr_cfg["patience"]:
                 break
+    model.to("cpu")
     if best_state:
         model.load_state_dict(best_state)
     model.eval()
     with torch.no_grad():
-        test_r2 = r2_score(((y[te] - ym) / ys).numpy(), model(x[te]).numpy())
+        xt, yt = x[te].cpu(), y[te].cpu()
+        test_r2 = r2_score(((yt - ym.cpu()) / ys.cpu()).numpy(), model(xt).numpy())
     return model, float(test_r2)
 
 
