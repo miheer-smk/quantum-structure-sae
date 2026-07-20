@@ -702,7 +702,17 @@ Several extensions would make the question more stringent.
   whether similar representational effects occur for different symmetries and
   correlation structures. A non-integrable setup should retain an observable that
   is not trivially decodable from the supplied inputs; connected correlators or
-  disorder in couplings are promising candidates.
+  disorder in couplings are promising candidates. A methodological caution applies
+  when choosing what to disorder: feeding the *couplings* as input (e.g. per-bond
+  XXZ anisotropies) tends to make the correlation observables partly
+  input-decodable — the same input-triviality confound as the fixed-longitudinal
+  mixed-field control (Section 8.2) — so it changes the input type and the symmetry
+  at once and cannot isolate either. The single-variable comparison holds the input
+  type fixed (transverse fields, as in the primary TFIM setting) and varies only
+  integrability. The specific missing control that would disentangle a symmetry
+  effect from an input-triviality effect is a **field-disorder XXZ**: disorder a
+  transverse or staggered field on top of fixed couplings, so the order observable
+  is a non-trivial function of the input as it is in the TFIM.
 - **Larger systems.** DMRG or other tensor-network ground-state solvers would
   permit a study beyond the exact-diagonalisation scale and could test scaling
   model width and depth with \(L\).

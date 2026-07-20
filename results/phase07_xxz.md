@@ -23,3 +23,35 @@ Family `xxz`, L=8, input_dim=7, 10 trained seeds vs 64 random inits, eval N=1000
 | mean_nn_zz | 0.031 | 0.206 ± 0.091 [min 0.064] | 0.407 ± 0.096 (0.555) | -2.1σ | **UNDERPOWERED** |
 
 *Flags: SEPARATION = min(trained) > random p95; UNDERPOWERED = no separation and σ_y < 0.1 (target barely varies); NULL = varies enough but no trained advantage.*
+---
+
+## Locked interpretation (do not drift)
+
+**The effect does not transfer to XXZ as configured** (Jz-disorder, principled
+range Jz∼U[0.1, 2.0]). The well-powered target (entropy, σ_y=0.174) is a **clean
+null** — incremental R² beyond poly-2(Jz) = 0.0004 vs 0.0004 random (−0.1σ), an
+~80× smaller beyond-input signal than TFIM entropy (0.031, +4.6σ). The order
+targets (⟨Z₀Z_{L-1}⟩, staggered SF, nn-ZZ) are **underpowered** (σ_y 0.03–0.09,
+below the 0.10 floor), so the order-transfer question cannot be adjudicated here.
+
+This is **conservative, not decisive**. The XXZ input is the *couplings* Jz, which
+directly govern the ZZ observables, so poly-2(Jz) partly **saturates** their
+decodability (entropy probe R² 0.951) — the same input-triviality confound family
+as the draft's §8.2 mixed-field diagnostic. The result therefore reads as *"the
+effect is absent in this configuration, for reasons we cannot fully separate from
+the input choice,"* **NOT** as *"U(1) symmetry kills the effect."*
+
+**Why XXZ cannot isolate a cause.** XXZ changes **two variables at once** relative
+to TFIM — the input type (transverse fields → couplings) *and* the symmetry
+(Z₂ → U(1)). It therefore cannot attribute the null to either. **ANNNI is the
+clean single-variable test**: it holds the input type fixed (transverse fields,
+exactly as in TFIM) and changes only integrability (nnn ZZ frustration), so ANNNI
+carries the real weight of the diversity section. This framing is fixed *before*
+ANNNI's numbers land, so ANNNI is not retrofitted to a convenient story.
+
+**Named missing control (future work, not run here).** A **field-disorder XXZ**
+(disorder a transverse/staggered field on top of fixed couplings, so the observable
+is a non-trivial function of the field as in TFIM) is the specific experiment that
+would disentangle *"U(1) kills it"* from *"coupling-as-input made it trivial."* It
+is parked as explicit future work; the XXZ null is reported as confounded with the
+fix named.
