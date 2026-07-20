@@ -1,0 +1,55 @@
+# Phase 0.7 — XXZ (per-bond Jz disorder). Integrable, U(1) instead of TFIM's Z2.
+# Principled TFIM-analog disorder range Jz ~ U(0.1, 2.0) around the transition
+# Jz_c = 1 (NO range tuning). Input = the disordered anisotropy vector {Jz_i}.
+seed: 42
+family: xxz
+
+L: 8               # chain length; transformer input_dim = L-1 = 7 bonds
+jz_min: 0.1
+jz_max: 2.0
+
+train_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+model:
+  d_model: 64
+  n_heads: 4
+  n_layers: 3
+  d_ff: 256
+  dropout: 0.0
+
+train:
+  n_train: 50000
+  epochs: 200
+  batch_size: 128
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  grad_clip: 1.0
+  patience: 15
+
+eval:
+  seed: 909             # fixed eval yardstick, shared across all trained + random nets
+  n: 1000
+
+observables:      # note: <X_i> = 0 for XXZ by Sz conservation, so mean_x is omitted
+  - entropy
+  - staggered_sf
+  - long_range_zz
+  - mean_nn_zz
+
+controls:
+  - mean_h
+  - raw_h
+  - poly2_h
+
+probe:
+  ridge_alpha: 1.0
+  n_folds: 5
+  fold_seed: 42
+
+n_random_init: 16       # launch pool for the p95 threshold
+n_random_check: 64      # stability pool
+p95_jumpy_tol: 0.02
+underpowered_std_floor: 0.10   # sigma_y below this => UNDERPOWERED (not NULL)
+
+logging:
+  wandb: false

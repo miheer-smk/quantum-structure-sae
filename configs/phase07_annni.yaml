@@ -1,0 +1,58 @@
+# Phase 0.7 — transverse-field ANNNI (nnn ZZ frustration -> non-integrable),
+# Z2 preserved so the order proxy stays beyond-input. Input = {h_i}, same as TFIM.
+# TFIM-analog field range h ~ U(0.1, 2.0); frustration kappa = J2/J1 = 0.3.
+seed: 42
+family: annni
+
+L: 8               # transformer input_dim = L = 8 fields
+h_min: 0.1
+h_max: 2.0
+J1: 1.0
+J2: 0.3
+
+train_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+model:
+  d_model: 64
+  n_heads: 4
+  n_layers: 3
+  d_ff: 256
+  dropout: 0.0
+
+train:
+  n_train: 50000
+  epochs: 200
+  batch_size: 128
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  grad_clip: 1.0
+  patience: 15
+
+eval:
+  seed: 909
+  n: 1000
+
+observables:
+  - entropy
+  - staggered_sf
+  - long_range_zz
+  - mean_nn_zz
+  - mean_x
+
+controls:
+  - mean_h
+  - raw_h
+  - poly2_h
+
+probe:
+  ridge_alpha: 1.0
+  n_folds: 5
+  fold_seed: 42
+
+n_random_init: 16
+n_random_check: 64
+p95_jumpy_tol: 0.02
+underpowered_std_floor: 0.10
+
+logging:
+  wandb: false
