@@ -629,6 +629,81 @@ conflates non-integrability with an observable that has become input-trivial. It
 shows that the reported advantage depends on the target retaining beyond-input
 structure; it does not isolate integrability as a causal factor.
 
+### 8.3 Hamiltonian diversity: a non-integrable model and a cross-symmetry control
+
+The §8.2 diagnostic is confounded because it changes the observable's
+input-triviality at the same time as integrability. We therefore run two further
+families, each under the full multi-seed protocol used for the headline (ten
+independently trained transformers versus a 64-network random-initialization
+distribution, the full degree-two input control, energy R² and the beyond-input
+protection ⟨Z_i⟩→0 verified before any probe). For each observable we report its
+ensemble standard deviation σ_y next to the separation, because a target that
+barely varies cannot support a conclusion; a target is flagged *underpowered* when
+it shows no separation and σ_y is below a fixed floor.
+
+**A clean single-variable test — transverse-field ANNNI (non-integrable).** Adding
+a next-nearest-neighbour coupling −J₂∑ZᵢZᵢ₊₂ with κ=J₂/J₁=0.3 breaks integrability
+(Jordan–Wigner maps J₂ to a four-fermion interaction) while **preserving** the Z₂
+spin-flip symmetry, so ⟨Z_i⟩=0 and the order proxy stays beyond-input. The input
+is the transverse-field vector, exactly as in the primary TFIM setting, so this
+varies **only integrability**. Energy test R² = 0.9995 ± 0.0004 over ten seeds;
+max|⟨Z_i⟩| = 1.0×10⁻¹⁰. The result (Table 8) is a clear transfer: the non-local
+order proxy ⟨Z₀Z_{L−1}⟩ (σ_y = 0.195, well powered) separates the trained
+representation from the random-initialization distribution on **both** the
+incremental R² beyond the degree-two input (0.009 vs 0.004, +5.9σ) and the
+beyond-input partial correlation (0.613 vs 0.324, +3.5σ), uniformly across all ten
+seeds. Entropy, the nearest-neighbour correlator, and the staggered structure
+factor separate on both cuts as well; transverse magnetisation ⟨X_i⟩ separates on
+the incremental measure (+6.3σ) but **not** on partial correlation (0.597 vs 0.584,
++0.3σ), and we report that split rather than dropping it.
+
+**Separation and magnitude are distinct axes.** The large σ-separations are
+statements of *confidence that the effect is nonzero*, not of its size. In absolute
+terms the effect **attenuates** under non-integrability: the order-proxy incremental
+R² is about three times smaller than in the TFIM (0.009 versus 0.028), while the
+beyond-input partial correlation (0.613) is on par with the TFIM value (0.560). The
+honest reading is therefore that the effect **survives but weakens** — robustly
+present and uniform over seeds, yet smaller in absolute incremental decodability.
+
+| Observable | σ_y | Incr. R² trained [min] | Incr. R² random (p95) | sep | Partial-r trained | sep |
+|---|---:|---:|---:|---:|---:|---:|
+| End-to-end ⟨Z₀Z_{L−1}⟩ | 0.195 | 0.009 [0.008] | 0.004 (0.006) | +5.9σ | 0.613 | +3.5σ |
+| Half-chain entropy | 0.093 | 0.024 [0.021] | 0.010 (0.014) | +6.6σ | 0.565 | +4.0σ |
+| Mean nearest-neighbour ⟨ZZ⟩ | 0.095 | 0.006 [0.005] | 0.004 (0.004) | +6.2σ | 0.824 | +4.0σ |
+| Mean ⟨X⟩ magnetisation | 0.119 | 0.004 [0.004] | 0.003 (0.003) | +6.3σ | 0.597 | +0.3σ |
+| Staggered structure factor | 0.011 | 0.006 [0.005] | 0.004 (0.004) | +5.6σ | 0.741 | +3.1σ |
+
+*Table 8: Transverse-field ANNNI (κ=0.3, non-integrable), ten trained seeds vs 64
+random inits, poly-2(h) control. The order proxy separates on both measures,
+uniformly over seeds; magnitudes are smaller than TFIM (order-proxy incremental R²
+0.009 vs 0.028) while the partial correlation is comparable (0.613 vs 0.560).*
+
+**A cross-symmetry test that cannot isolate a cause — XXZ (integrable, U(1)).**
+Disordering the per-bond anisotropy Jz of the XXZ chain gives an integrable model
+with U(1) rather than Z₂ symmetry. At the principled TFIM-analog range
+Jz∼U(0.1,2.0), the well-powered target is entanglement entropy (σ_y=0.174): it is a
+**clean null** — incremental R² beyond poly-2 = 0.0004, versus 0.031 in the TFIM
+(an ~80× smaller beyond-input signal), with the trained distribution not exceeding
+the random one. The ZZ-based order observables are **underpowered** at this range
+(σ_y = 0.03–0.09), so the order-transfer question cannot be adjudicated. This test
+is **conservative, not decisive**: XXZ changes **two variables at once** — the input
+type (transverse fields → couplings) *and* the symmetry (Z₂ → U(1)). Because the
+input is the couplings that directly govern the ZZ observables, a degree-two
+polynomial of the input partly saturates their decodability (entropy probe R² =
+0.951), the same input-triviality confound family as §8.2. The result therefore
+reads as *"the effect is absent in this configuration, for reasons we cannot fully
+separate from the input choice,"* not as *"U(1) symmetry removes the effect."* The
+specific control that would disentangle these — a field-disorder XXZ, in which a
+field rather than the couplings is disordered so the observable is a non-trivial
+function of the input — is named in the future work and not run here.
+
+**What the diversity experiments establish.** The effect is **not specific to the
+integrable TFIM**: in the single-variable test that isolates integrability (ANNNI),
+the trained representation's beyond-input encoding of non-local order **survives**,
+uniformly over ten seeds, though it **attenuates** in absolute terms. The
+cross-symmetry test (XXZ) is confounded by an input-type change and returns an
+honest, underpowered null that we do not over-read.
+
 ## 9. Discussion
 
 The experiments support a narrow but useful conclusion. When trained to predict
@@ -638,7 +713,11 @@ architecture-matched untrained transformer and the tested input baselines. The
 effect has a coherent depth profile, survives a partial-correlation check against
 the full degree-two polynomial of the input, exceeds a permutation null for
 selected SAE correlations, and replicates uniformly across ten independently
-trained seeds relative to a random-initialization distribution.
+trained seeds relative to a random-initialization distribution. It is also not an
+artifact of integrability: in a non-integrable transverse-field ANNNI model
+(Section 8.3) the beyond-input encoding of non-local order survives, though it
+attenuates in absolute magnitude; a cross-symmetry XXZ test is confounded by an
+input-type change and left as an honest, underpowered null.
 
 The causal experiment changes the interpretation of this result. The
 order-defined direction is present and probe-accessible, yet removing it is not
@@ -665,10 +744,15 @@ SAE latents.
 
 This work has several substantial limitations.
 
-1. **One primary Hamiltonian family.** The central result concerns disordered,
-   open-boundary TFIM instances with fields sampled from one distribution. The
-   mixed-field diagnostic is not a clean Hamiltonian-family generalisation test.
-   We do not establish universality across Hamiltonians.
+1. **Limited Hamiltonian coverage.** The primary result concerns disordered,
+   open-boundary TFIM. We add one clean single-variable generalisation — a
+   non-integrable transverse-field ANNNI model (Section 8.3), where the effect
+   survives but attenuates — and one cross-symmetry test, XXZ, which is confounded
+   by an input-type change (couplings rather than fields as input) and returns an
+   underpowered null. We therefore establish that the effect is not an integrability
+   artifact, but we do not establish universality across symmetries, boundary
+   conditions, or a broad Hamiltonian family; in particular the cross-symmetry
+   (Z₂ vs U(1)) question remains open pending the field-disorder XXZ control.
 2. **Finite sizes.** The scaling study reaches \(L=12\) using sparse
    exact-diagonalisation methods. It does not establish behaviour at system sizes
    requiring DMRG or other tensor-network solvers.
