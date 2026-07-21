@@ -1,7 +1,7 @@
 # Local CI-style checks. `make smoke` is the Phase-0 acceptance gate.
 PY ?= .venv/bin/python
 
-.PHONY: test test-fast lint smoke check
+.PHONY: test test-fast lint smoke paper check
 
 test:            ## full pytest suite (slow tests included, ~10 min)
 	$(PY) -m pytest -q
@@ -14,5 +14,8 @@ lint:            ## ruff, same selection as CI
 
 smoke:           ## tiny end-to-end run: config -> data -> train -> SAE -> logs
 	$(PY) experiments/smoke.py --config configs/smoke.yaml
+
+paper:           ## build the manuscript PDF from tmlr_draft.md (self-bootstrapping)
+	$(PY) scripts/build_paper.py
 
 check: lint test-fast smoke   ## everything a commit should pass locally

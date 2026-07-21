@@ -42,3 +42,7 @@ Thumbs.db
 .env
 *.pem
 *_token.txt
+
+# Paper build (downloaded binaries + generated PDF)
+.build/
+tmlr_draft.pdf
